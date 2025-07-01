@@ -1,7 +1,17 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-//import { Dialog } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { RegisterForm } from "@/components/page_parts/RegisterForm";
+import { LoginForm } from "@/components/page_parts/LoginForm";
 
 
 export default function Home() {
@@ -26,9 +36,9 @@ export default function Home() {
           />
         </h1>
       </div>
-      <div id="button-box" className="flex flex-col gap-3 bg-secondary/100 text-secondary-dark/100 flex-grow-1 ">
+      <div id="button-box" className="flex flex-col gap-3 bg-secondary/100 text-secondary-dark/100 flex-grow-0 ">
         <div id="apis" className="p-8 flex flex-col gap-3">
-          <Button className="text-[17px] flex flex-row justify-center items-center items-center">
+          <Button className="text-[17px] flex flex-row justify-center items-center">
             {/* <Image 
               src="/images/icons/Google.png"
               alt="google-logo"
@@ -54,18 +64,47 @@ export default function Home() {
         </div>
 
         <div id="email" className="p-8 flex flex-col gap-3 h-full ">
-          <Button className="mb-5 text-[17px] flex flex-row justify-center items-center">
-            {/* <Image 
-              src="/images/icons/+.png"
-              alt="+ icons"
-              height={30}
-              width={30}
-            /> */}
-            Créez un compte
-          </Button>
+          <Dialog>
+            <DialogTrigger>
+                <Button className="mb-5 text-[17px] flex flex-row justify-center items-center">
+                {/* <Image 
+                  src="/images/icons/+.png"
+                  alt="+ icons"
+                  height={30}
+                  width={30}
+                /> */}
+                Créez un compte
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle></DialogTitle>
+                <DialogDescription></DialogDescription>
+              </DialogHeader>
+              {/* Contenu de la modal */}
+              <RegisterForm />
+              <DialogFooter></DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
 
           <p className="text-[14px]">En vous inscrivant, vous acceptez nos <Link href={"#"} className="text-primary">Conditions d’utilisation</Link> , notre <Link href={"#"} className="text-primary">Politique de confidencialité</Link>  et notre <Link href={"#"} className="text-primary">Utilisation des cookies</Link>.</p>
-          <p className="text-[14px] mt-15">Vous avez déjà un compte ? <Link href={"#"} className="text-primary">Connectez-vous</Link> </p>
+          <p className="text-[14px] mt-15">Vous avez déjà un compte ? 
+            <Dialog>
+            <DialogTrigger>
+                <span className="text-primary">&nbsp; Connectez-vous</span> 
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle></DialogTitle>
+                <DialogDescription></DialogDescription>
+              </DialogHeader>
+              {/* Contenu de la modal */}
+              <LoginForm />
+              <DialogFooter></DialogFooter>
+            </DialogContent>
+          </Dialog>
+          </p>
         </div>
 
         
