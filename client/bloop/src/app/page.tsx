@@ -43,21 +43,23 @@ export default function Home() {
             Inscrivez-vous
           </h3>
           <Button className="text-[17px] flex flex-row justify-center items-center md:w-2/4 md:text-[20px]">
-            {/* <Image 
-              src="/images/icons/Google.png"
+            <Image
+              className="mr-2"
+              src="/images/icons/google.svg"
               alt="google-logo"
-              height={30}
-              width={30}
-            /> */}
+              height={20}
+              width={20}
+            />
             Continuer avec Google
           </Button>
           <Button className="text-[17px] flex flex-row justify-center items-center md:w-2/4 md:text-[20px]">
-            {/* <Image 
-              src="/images/icons/Apple Inc.png"
+            <Image
+              className="mr-2"
+              src="/images/icons/apple.svg"
               alt="apple-logo"
-              height={30}
-              width={30}
-            /> */}
+              height={20}
+              width={20}
+            />
             Continuer avec Apple
           </Button>
         </div>
@@ -71,12 +73,13 @@ export default function Home() {
           <Dialog>
             <DialogTrigger>
               <Button className="mb-5 text-[17px] flex flex-row justify-center items-center md:w-2/4 md:text-[20px]">
-                {/* <Image 
-                  src="/images/icons/+.png"
+                <Image
+                  className="mr-2"
+                  src="/images/icons/+.svg"
                   alt="+ icons"
-                  height={30}
-                  width={30}
-                /> */}
+                  height={20}
+                  width={20}
+                />
                 Créez un compte
               </Button>
             </DialogTrigger>
