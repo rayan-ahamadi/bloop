@@ -11,7 +11,7 @@ import { useState } from "react"
 
 
 const Step1Schema = z.object({
-  name: z.string().min(2, { message: "Nom trop court" }),
+  name: z.string().min(2, { message: "Nom trop court (Min 2 caractères)" }),
   email: z.string().email({ message: "Email invalide" }),
   birthdate: z.string()
 })
