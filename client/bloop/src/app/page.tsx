@@ -95,8 +95,8 @@ export default function Home() {
           </Dialog>
 
 
-          <p className="text-[14px]">En vous inscrivant, vous acceptez nos <Link href={"#"} className="text-primary">Conditions d’utilisation</Link> , notre <Link href={"#"} className="text-primary">Politique de confidencialité</Link>  et notre <Link href={"#"} className="text-primary">Utilisation des cookies</Link>.</p>
-          <p className="text-[14px] mt-15 flex-grow-1 mt-4">Vous avez déjà un compte ?
+          <p className="text-[14px] w-2/4">En vous inscrivant, vous acceptez nos <Link href={"#"} className="text-primary">Conditions d’utilisation</Link> , notre <Link href={"#"} className="text-primary">Politique de confidentialité </Link>  et notre <Link href={"#"} className="text-primary">Utilisation des cookies</Link>.</p>
+          <p className="text-[14px] flex-grow-1 mt-4">Vous avez déjà un compte ?
             <Dialog>
               <DialogTrigger className="md:block md:mt-5 md:w-2/4">
                 <span className="text-primary cursor-pointer md:hidden">&nbsp; Connectez-vous</span>
