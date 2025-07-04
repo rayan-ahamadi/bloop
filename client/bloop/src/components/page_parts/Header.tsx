@@ -6,8 +6,9 @@ import { useRef, useState } from "react";
 export default function Header() {
     const refMenu = useRef<HTMLDivElement>(null);
     const [menuState, setMenuState] = useState(false);
-    const displayMobileMenu = (e) => {
+    const displayMobileMenu = (e: React.MouseEvent<HTMLDivElement>) => {
         const event = e?.target as HTMLElement;
+
         if (refMenu.current) {
             const firstChild = refMenu.current.children[0] as HTMLElement;
 
@@ -35,11 +36,11 @@ export default function Header() {
                     onClick={displayMobileMenu}
                 />
                 <Image
-                    src="/images/logo/bloop-4.svg"
+                    src="/images/logo/bloop-4.png"
                     alt="Menu"
-                    width={24}
-                    height={24}
-                    className="hidden md:block"
+                    width={90}
+                    height={50}
+                    className="hidden md:block h-auto ml-8"
                 />
             </div>
             <div className="logo mr-[45%]">

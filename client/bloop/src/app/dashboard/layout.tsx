@@ -1,4 +1,6 @@
 import Header from "@/components/page_parts/Header";
+import Menu from "@/components/page_parts/Menu";
+import "../globals.css";
 
 export default function DashboardLayout({
     children,
@@ -6,13 +8,12 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className="h-max">
-                <Header />
-                <main>
-                    {children}
-                </main>
-            </body>
-        </html>
+        <main className="flex flex-col h-screen">
+            <Header />
+            <div className="flex-grow-1">
+                <Menu className="hidden md:block" />
+                {children}
+            </div>
+        </main>
     );
 }
