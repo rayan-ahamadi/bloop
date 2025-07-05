@@ -10,7 +10,7 @@ export default function DashboardLayout({
     return (
         <main className="flex flex-col h-screen">
             <Header />
-            <div className="flex-grow-1">
+            <div className="flex-grow-1 flex flex-row">
                 <Menu className="hidden md:block" />
                 {children}
             </div>

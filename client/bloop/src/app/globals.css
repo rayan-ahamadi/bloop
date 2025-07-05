@@ -374,7 +374,7 @@ body {
     vertical-align: middle;
     margin-left: 0.4ch;
     position: absolute;
-    right: 40;
+    right: 40px;
   }
 
   @media screen and (max-width: 425px) {
