@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className="h-screen">
+      <body className="h-screen max-h-screen">
         {children}
       </body>
     </html>

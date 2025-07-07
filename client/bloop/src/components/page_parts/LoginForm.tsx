@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { redirect } from 'next/navigation'
+
 
 
 const schema = z.object({
@@ -24,10 +26,11 @@ function LoginForm() {
     },
   })
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = form.getValues();
     console.log(formData);
+    redirect("/dashboard");
   }
 
 

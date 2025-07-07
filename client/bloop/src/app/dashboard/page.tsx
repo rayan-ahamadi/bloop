@@ -1,4 +1,5 @@
-import Bloop from "@/components/page_parts/bloop";
+import Bloop from "@/components/page_parts/Bloop";
+import BloopPost from "@/components/page_parts/PostBloop";
 
 export default function DashboardHome() {
     const bloops = [
@@ -61,9 +62,11 @@ export default function DashboardHome() {
             saved: false,
         },
     ];
+
     return (
-        <div className="flex flex-col items-center md:w-3/5 w-full">
-            <div className="w-full ">
+        <div className="flex flex-col items-center md:w-[45%] w-full md:h-[93vh] ">
+            <BloopPost />
+            <div className="bloops w-full max-h-screen overflow-y-auto ">
                 {bloops.map((bloop, index) => (
                     <Bloop key={index} bloopContent={bloop} />
                 ))}

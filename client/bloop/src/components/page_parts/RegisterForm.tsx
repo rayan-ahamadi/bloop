@@ -1,13 +1,14 @@
 "use client"
 
-import {Form, FormField, FormLabel, FormControl, FormMessage, FormDescription, FormItem} from "@/components/ui/form"
+import { Form, FormField, FormLabel, FormControl, FormMessage, FormDescription, FormItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {Button} from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import {z} from "zod"
-import {useForm} from "react-hook-form"
-import {zodResolver} from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
+import { redirect } from 'next/navigation'
 
 
 const Step1Schema = z.object({
@@ -21,7 +22,8 @@ const Step2Schema = z.object({
   confirmPassword: z.string().min(6, { message: "Min 6 caractères" }),
   terms: z.boolean().refine((val) => val, {
     message: "Vous devez accepter les conditions d'utilisation",
-  }),})
+  }),
+})
   .refine((data) => data.password === data.confirmPassword, {
     message: "Les mots de passe ne correspondent pas",
     path: ["confirmPassword"],
@@ -48,70 +50,71 @@ const FinalSchema = z.object({
 })
 
 function RegisterForm() {
-    const form = useForm<z.infer<typeof FinalSchema>>({
-      resolver: zodResolver(FinalSchema),
-      defaultValues: {
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        birthdate: "",
-        terms: false,
-        themes: [],
-        profilePicture: undefined,
-        bio: "",
-      },
-    }) 
+  const form = useForm<z.infer<typeof FinalSchema>>({
+    resolver: zodResolver(FinalSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      birthdate: "",
+      terms: false,
+      themes: [],
+      profilePicture: undefined,
+      bio: "",
+    },
+  })
 
-    function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const formData = form.getValues();
-        console.log(formData);
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = form.getValues();
+    console.log(formData);
+    redirect("/dashboard");
+  }
+
+  const [step, setStep] = useState(1)
+
+  async function nextStep() {
+    let valid;
+    if (step === 1) {
+      valid = await form.trigger(["name", "email", "birthdate"])
+    }
+    else if (step === 2) {
+      valid = await form.trigger(["password", "confirmPassword", "terms"])
+    }
+    else if (step === 3) {
+      valid = await form.trigger(["themes"])
+    }
+    else if (step === 4) {
+      valid = await form.trigger(["profilePicture", "bio"])
+    }
+    if (valid) {
+      setStep((prev) => prev + 1)
+    } else {
+      console.log("Erreur lors de l'étape")
     }
 
-    const [step, setStep] = useState(1)
+  }
 
-    async function nextStep() {
-      let valid; 
-      if (step === 1) {
-        valid = await form.trigger(["name", "email", "birthdate"])
-      } 
-      else if (step === 2) {
-        valid = await form.trigger(["password", "confirmPassword", "terms"])
-      } 
-      else if (step === 3) {
-        valid = await form.trigger(["themes"])
-      } 
-      else if (step === 4) {
-        valid = await form.trigger(["profilePicture", "bio"])
-      }
-      if (valid) {
-        setStep((prev) => prev + 1)
-      } else {
-        console.log("Erreur lors de l'étape")
-      }
-      
-    }
-
-    async function prevStep() {
-      setStep((prev) => prev - 1)
-    }
+  async function prevStep() {
+    setStep((prev) => prev - 1)
+  }
 
 
-    const themeOptions = [
-      "Jeux vidéo",
-      "Musique",
-      "Art",
-      "Sport",
-      "Technologie",
-      "Cinéma",
-      "Voyage",
-      "Cuisine",
-    ]
+  const themeOptions = [
+    "Jeux vidéo",
+    "Musique",
+    "Art",
+    "Sport",
+    "Technologie",
+    "Cinéma",
+    "Voyage",
+    "Cuisine",
+  ]
 
 
-    return (
-    <Form {...form}> 
+  return (
+    <Form {...form}>
       <form onSubmit={onSubmit} action="#" className="flex flex-col gap-4">
 
         {/* Première étape */}
@@ -149,17 +152,17 @@ function RegisterForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date de naissance</FormLabel>
-                    <FormControl>
+                  <FormControl>
                     <Input
                       type="date"
                       max={new Date(
-                      new Date().setFullYear(new Date().getFullYear() - 13)
+                        new Date().setFullYear(new Date().getFullYear() - 13)
                       )
-                      .toISOString()
-                      .split("T")[0]}
+                        .toISOString()
+                        .split("T")[0]}
                       {...field}
                     />
-                    </FormControl>
+                  </FormControl>
                   <FormMessage />
                   <FormDescription>
                     Votre date de naissance nous aide à personnaliser votre expérience.
@@ -168,8 +171,8 @@ function RegisterForm() {
                 </FormItem>
               )}
             />
-            
-          </div>  
+
+          </div>
         )}
 
         {/* Deuxième étape */}
@@ -224,51 +227,51 @@ function RegisterForm() {
         {step === 3 && (
           <div className="flex flex-col gap-2">
             <FormField
-          control={form.control}
-          name="themes"
-          render={() => (
-            <FormItem>
-              <FormLabel>Thèmes préférés</FormLabel>
-              <div className="grid grid-cols-2 gap-2">
-                {themeOptions.map((theme) => (
-                  <FormField
-                    key={theme}
-                    control={form.control}
-                    name="themes"
-                    render={({ field }) => {
-                      return (
-                        <FormItem
-                          key={theme}
-                          className="flex items-center space-x-2"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(theme)}
-                              onCheckedChange={(checked) => {
-                                const newValue = checked
-                                  ? [...field.value, theme]
-                                  : field.value.filter((item) => item !== theme)
-                                field.onChange(newValue)
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal">{theme}</FormLabel>
-                        </FormItem>
-                      )
-                    }}
-                  />
-                ))}
-              </div>
-              <FormDescription>
-                Choisissez au moins 5 centres d’intérêt.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              control={form.control}
+              name="themes"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Thèmes préférés</FormLabel>
+                  <div className="grid grid-cols-2 gap-2">
+                    {themeOptions.map((theme) => (
+                      <FormField
+                        key={theme}
+                        control={form.control}
+                        name="themes"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={theme}
+                              className="flex items-center space-x-2"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(theme)}
+                                  onCheckedChange={(checked) => {
+                                    const newValue = checked
+                                      ? [...field.value, theme]
+                                      : field.value.filter((item) => item !== theme)
+                                    field.onChange(newValue)
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">{theme}</FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <FormDescription>
+                    Choisissez au moins 5 centres d’intérêt.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         )}
-      
+
         {/* Quatrième étape */}
         {step === 4 && (
           <div className="flex flex-col gap-2">
@@ -299,7 +302,7 @@ function RegisterForm() {
                     <Input type="textfield" {...field} />
                   </FormControl>
                   <FormDescription>Max 500 caractères</FormDescription>
-                  <FormMessage />                
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -313,10 +316,10 @@ function RegisterForm() {
           ) : (
             <Input type="submit" value={"S'inscrire ›"} className="font-bold" />
           )}
-        </div> 
+        </div>
       </form>
     </Form>
-    )
+  )
 }
 
 export { RegisterForm }

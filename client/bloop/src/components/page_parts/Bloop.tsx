@@ -1,4 +1,6 @@
 "use client"
+
+import React from "react";
 import Image from "next/image";
 import ChatIcon from "@/components/icons/chat.svg";
 import HeartIcon from "@/components/icons/heart.svg";
@@ -53,13 +55,13 @@ export default function Bloop({ bloopContent }: BloopProps) {
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
         if (days > 0) {
-            return `${days} jour${days > 1 ? 's' : ''} ago`;
+            return `${days} jour${days > 1 ? 's' : ''}`;
         } else if (hours > 0) {
-            return `${hours} heure${hours > 1 ? 's' : ''} ago`;
+            return `${hours} heure${hours > 1 ? 's' : ''}`;
         } else if (minutes > 0) {
-            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            return `${minutes} minute${minutes > 1 ? 's' : ''}`;
         } else {
-            return `${seconds} seconde${seconds > 1 ? 's' : ''} ago`;
+            return `${seconds} seconde${seconds > 1 ? 's' : ''}`;
         }
     };
 
@@ -109,19 +111,19 @@ export default function Bloop({ bloopContent }: BloopProps) {
             <div className="bloopsstats flex flex-row items-center justify-end-safe">
                 <div className="stats-container bg-primary rounded-md shadow-[4px_4px_0_0_black] flex flex-row items-center gap-6 p-2 mt-2">
                     <span className="flex items-center gap-1">
-                        <ChatIcon className="inline-block" />
+                        <ChatIcon className="inline-block cursor-pointer hover:fill-accent/80" />
                         {replies}
                     </span>
                     <span className="flex items-center gap-1">
-                        <HeartIcon className="inline-block" />
+                        <HeartIcon className="inline-block cursor-pointer hover:fill-accent/80" />
                         {likes}
                     </span>
                     <span className="flex items-center gap-1">
-                        <PaperPlaneIcon className="inline-block" />
+                        <PaperPlaneIcon className="inline-block cursor-pointer hover:fill-accent/80" />
                         {rebloops}
                     </span>
                     <span className="flex items-center gap-1">
-                        <FloppyIcon className={"inline-block " + (saved ? "text-accent fill-accent" : "")} />
+                        <FloppyIcon className={"inline-block cursor-pointer hover:fill-accent/80 " + (saved ? "text-accent fill-accent" : "")} />
                     </span>
                 </div>
             </div>

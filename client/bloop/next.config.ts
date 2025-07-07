@@ -25,11 +25,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    // Désactive Turbopack
-    turbo: false,
-  },
-  webpack(config, options) {
+  webpack(config) {
     config.module.rules.push({
       test: /\.svg$/i,
       issuer: /\.[jt]sx?$/,
