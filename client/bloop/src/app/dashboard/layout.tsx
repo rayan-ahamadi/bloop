@@ -1,5 +1,6 @@
 import Header from "@/components/page_parts/Header";
 import Menu from "@/components/page_parts/Menu";
+import FindFriends from "@/components/page_parts/FindFriends";
 import "../globals.css";
 
 export default function DashboardLayout({
@@ -13,6 +14,7 @@ export default function DashboardLayout({
             <div className="flex-grow-1 flex flex-row">
                 <Menu className="hidden md:block" />
                 {children}
+                <FindFriends className="hidden md:block" />
             </div>
         </main>
     );

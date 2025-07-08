@@ -66,7 +66,7 @@ export default function Bloop({ bloopContent }: BloopProps) {
     };
 
     return (
-        <div className="flex flex-col p-4 bg-secondary shadow-md w-full border-y-2 first:border-t-0 last:border-b-0 border-secondary-dark">
+        <div className="flex flex-col p-4 bg-secondary shadow-md w-full border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
             <div className="bloopscontent flex flex-row gap-4 items-start">
                 <Image
                     src={profilePicture}
@@ -109,7 +109,7 @@ export default function Bloop({ bloopContent }: BloopProps) {
 
             </div>
             <div className="bloopsstats flex flex-row items-center justify-end-safe">
-                <div className="stats-container bg-primary rounded-md shadow-[4px_4px_0_0_black] flex flex-row items-center gap-6 p-2 mt-2">
+                <div className="stats-container border-2 border-secondary-dark bg-primary rounded-md shadow-[4px_4px_0_0_black] flex flex-row items-center gap-6 p-2 mt-2">
                     <span className="flex items-center gap-1">
                         <ChatIcon className="inline-block cursor-pointer hover:fill-accent/80" />
                         {replies}

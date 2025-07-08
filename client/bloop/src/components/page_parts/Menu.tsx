@@ -75,11 +75,11 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                     ))}
                 </div>
             </div>
-            <div className="desktop hidden md:flex md:flex-col md:justify-between md:items-left p-8 h-full">
+            <div className="desktop hidden md:flex md:flex-col md:justify-between md:items-left p-8 h-full bg-accent">
                 <div className="links flex flex-col items-left w-full mt-4 px-5">
                     {links.map((link, index) => (
                         <Link key={index} href={link.href} className="flex gap-4 items-center btn-accent mb-6 font-bold text-2xl  hover:underline hover:underline-offset-4 hover:transition-all hover:duration-300 hover:ease-in-out">
-                            <div className={"icons " + (link.active ? "bg-accent border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] " : " ")}>
+                            <div className={"icons " + (link.active ? "bg-primary border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] " : " ")}>
                                 <Image
                                     src={link.icon}
                                     alt={link.label}
@@ -102,13 +102,13 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                             Poster
                         </Button>
                     </div>
-                    <div className="profile-card flex flex-row item-center gap-2 border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] p-4 mt-4">
+                    <div className="bg-secondary profile-card flex flex-row item-center gap-2 border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] p-4 mt-8">
                         <Image
                             src="/images/icons/user.png"
                             alt="User Avatar"
                             width={45}
                             height={45}
-                            className="border-2 rounded-md shadow-[4px_4px_0_0_black] mr-2 h-auto"
+                            className="border-1 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] mr-2 h-auto bg-accent"
                         />
                         <div className="flex flex-col">
                             <p>

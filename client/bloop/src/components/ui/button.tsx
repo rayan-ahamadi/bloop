@@ -10,15 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary cursor-pointer text-primary-foreground shadow-xs hover:bg-primary/90 w-full border-2 border-secondary-dark text-secondary-dark shadow-[4px_4px_0_0_black] font-bold",
+          "bg-primary cursor-pointer text-primary-foreground shadow-xs hover:bg-primary/80 w-full border-2 border-secondary-dark text-secondary-dark shadow-[4px_4px_0_0_black] font-bold",
         defaultNoShadow:
-          "bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 w-full border-2 border text-secondary-dark border-secondary-dark font-bold border-2",
+          "bg-primary cursor-pointer text-primary-foreground hover:bg-primary/80 w-full border-2 border text-secondary-dark border-secondary-dark font-bold border-2",
         secondary:
-          "bg-secondary cursor-pointer text-secondary-dark shadow-xs hover:bg-secondary/90 w-full border-2 border-secondary-dark text-secondary-dark shadow-[4px_4px_0_0_black] font-bold",
+          "bg-secondary cursor-pointer text-secondary-dark shadow-xs hover:bg-secondary/80 w-full border-2 border-secondary-dark text-secondary-dark shadow-[4px_4px_0_0_black] font-bold",
         secondaryNoShadow:
-          "bg-secondary cursor-pointer text-secondary-dark hover:bg-secondary/90 w-full border-2 border-secondary-dark text-secondary-dark font-bold",
+          "bg-secondary cursor-pointer text-secondary-dark hover:bg-secondary/80 w-full border-2 border-secondary-dark text-secondary-dark font-bold",
         accent:
-          "bg-accent cursor-pointer text-secondary-dark shadow-xs hover:bg-secondary/90 w-full border-2 border-secondary-dark text-secondary-dark shadow-[4px_4px_0_0_black] font-bold",
+          "bg-accent cursor-pointer text-secondary-dark shadow-xs hover:bg-accent/80 w-full border-2 border-secondary-dark text-secondary-dark shadow-[4px_4px_0_0_black] font-bold",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",

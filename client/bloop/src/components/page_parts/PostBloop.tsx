@@ -15,7 +15,7 @@ export default function BloopPost() {
                     alt={"Avatar"}
                     width={45}
                     height={45}
-                    className="border-1 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] mr-2 h-auto"
+                    className="border-1 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] mr-2 h-auto bg-accent"
                 />
 
                 <div className="flex flex-col flex-grow">
@@ -24,7 +24,7 @@ export default function BloopPost() {
                         <div className="flex items-center gap-2">
                             <ImageIcon className="cursor-pointer hover:fill-accent/80" />
                         </div>
-                        <Button className="w-1/7 font-bold text-[16px]">
+                        <Button className="size-fit py-[6px] px-[20px] font-bold text-[16px]">
                             Poster
                         </Button>
                     </div>

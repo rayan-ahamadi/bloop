@@ -64,7 +64,7 @@ export default function DashboardHome() {
     ];
 
     return (
-        <div className="flex flex-col items-center md:w-[45%] w-full md:h-[93vh] ">
+        <div className="flex flex-col items-center md:w-[55%] w-full md:h-[93vh] md:flex-grow-1">
             <BloopPost />
             <div className="bloops w-full max-h-screen overflow-y-auto ">
                 {bloops.map((bloop, index) => (
