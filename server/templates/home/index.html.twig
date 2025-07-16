@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Symfony E.io{% endblock %}
+{% block description %}Bienvenue sur Symfony E.io, votre plateforme e-commerce moderne{% endblock %}
+
+{% block body %}
+<div class="auth-container" style="max-width: 600px;">
+    <div class="auth-header">
+        <h1 class="auth-logo">Symfony E.io</h1>
+        <p class="auth-subtitle">Votre plateforme e-commerce moderne</p>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+        <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
+            Bienvenue sur Symfony E.io, une application moderne construite avec Symfony 7.3, 
+            JWT Authentication et une architecture API REST robuste.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
+                <h3 style="color: #1a1a1a; margin-bottom: 10px;">🔐 Sécurisé</h3>
+                <p style="color: #666; font-size: 0.9rem;">Authentification JWT et validation robuste</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #764ba2;">
+                <h3 style="color: #1a1a1a; margin-bottom: 10px;">⚡ Moderne</h3>
+                <p style="color: #666; font-size: 0.9rem;">Symfony 7.3 avec PHP 8.2+</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #27ae60;">
+                <h3 style="color: #1a1a1a; margin-bottom: 10px;">🎯 API REST</h3>
+                <p style="color: #666; font-size: 0.9rem;">Architecture en couches et DTOs</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ path('app_login') }}" class="btn btn-primary">
+            Se connecter
+        </a>
+        <a href="{{ path('app_register') }}" class="btn btn-secondary">
+            Créer un compte
+        </a>
+    </div>
+
+    <div class="auth-links">
+        <p style="color: #666; font-size: 0.9rem;">
+            Développé avec ❤️ en utilisant Symfony 7.3
+        </p>
+    </div>
+</div>
+
+<style>
+.auth-container {
+    animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %} 

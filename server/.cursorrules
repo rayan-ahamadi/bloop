@@ -1,0 +1,261 @@
+# Règles Cursor pour l'application Symfony symfony-e.io
+
+## Contexte du projet
+
+Cette application est une API REST Symfony 7.3 avec authentification JWT, gestion d'utilisateurs et architecture en couches.
+
+## Règles générales
+
+-   Toujours répondre en français
+-   Respecter les conventions Symfony 7.3
+-   Utiliser PHP 8.2+ avec les attributs (pas d'annotations)
+-   Suivre les bonnes pratiques PSR-12 pour le formatage
+-   Implémenter la gestion d'erreurs avec try/catch appropriés
+
+## Architecture et structure
+
+### Controllers
+
+-   Utiliser AbstractController comme classe de base
+-   Implémenter la gestion d'erreurs avec try/catch
+-   Retourner des JsonResponse avec codes HTTP appropriés
+-   Utiliser les groupes de sérialisation pour contrôler les données exposées
+-   Logger les actions importantes avec PSR-3 LoggerInterface
+-   Valider les données d'entrée avec ValidatorInterface
+
+### Entities
+
+-   Utiliser les attributs Doctrine ORM (pas d'annotations)
+-   Implémenter les interfaces appropriées (UserInterface, PasswordAuthenticatedUserInterface)
+-   Utiliser les groupes de sérialisation pour contrôler l'exposition des données
+-   Ajouter des contraintes de validation avec Assert
+-   Implémenter les callbacks de cycle de vie (PrePersist, PreUpdate)
+-   Utiliser les types Doctrine appropriés (Types::DATETIME_MUTABLE, etc.)
+
+### DTOs (Data Transfer Objects)
+
+-   Créer des DTOs pour la validation des données d'entrée
+-   Utiliser SerializedName pour mapper les propriétés JSON
+-   Ajouter des contraintes de validation avec groupes
+-   Implémenter les getters/setters pour toutes les propriétés
+-   Utiliser des types stricts (string, int, bool, etc.)
+
+### Services
+
+-   Utiliser l'injection de dépendances
+-   Implémenter des interfaces pour les services
+-   Logger les opérations importantes
+-   Gérer les exceptions de manière appropriée
+-   Utiliser des noms de méthodes explicites
+
+### Repositories
+
+-   Étendre ServiceEntityRepository
+-   Implémenter des méthodes de recherche personnalisées
+-   Utiliser QueryBuilder pour les requêtes complexes
+-   Gérer la pagination avec des méthodes dédiées
+-   Retourner des tableaux associatifs pour les métadonnées
+
+## Sécurité
+
+### Authentification JWT
+
+-   Utiliser LexikJWTAuthenticationBundle
+-   Configurer les clés JWT dans .env
+-   Implémenter UserProvider personnalisé si nécessaire
+-   Gérer les tokens avec TTL approprié
+-   Utiliser des firewalls stateless pour l'API
+
+### Validation des mots de passe
+
+-   Utiliser des contraintes de complexité (majuscule, minuscule, chiffre, caractère spécial)
+-   Hacher les mots de passe avec l'algorithme auto de Symfony
+-   Ne jamais exposer les mots de passe dans les réponses
+
+### Contrôle d'accès
+
+-   Utiliser les rôles Symfony (ROLE_USER, ROLE_ADMIN)
+-   Configurer les access_control dans security.yaml
+-   Implémenter des voters personnalisés si nécessaire
+
+## Tests
+
+### Tests de Controllers
+
+-   Étendre WebTestCase
+-   Utiliser des fixtures pour les données de test
+-   Tester les codes de réponse HTTP
+-   Vérifier la structure des réponses JSON
+-   Tester l'authentification JWT
+-   Nettoyer la base de données entre les tests
+
+### Tests d'Entities
+
+-   Tester les contraintes de validation
+-   Vérifier les callbacks de cycle de vie
+-   Tester les méthodes de calcul (getAge, etc.)
+
+### Tests de Services
+
+-   Utiliser des mocks pour les dépendances
+-   Tester les cas d'erreur
+-   Vérifier le logging
+
+## API REST
+
+### Conventions
+
+-   Utiliser les verbes HTTP appropriés (GET, POST, PUT, DELETE)
+-   Retourner des codes HTTP standards (200, 201, 400, 401, 403, 404, 500)
+-   Implémenter la pagination pour les listes
+-   Inclure des liens HATEOAS dans les réponses
+-   Utiliser des groupes de sérialisation pour contrôler l'exposition
+
+### Gestion d'erreurs
+
+-   Retourner des messages d'erreur en français
+-   Inclure des détails de validation dans les réponses 400
+-   Logger les erreurs avec le contexte approprié
+-   Ne pas exposer d'informations sensibles dans les erreurs
+
+### Validation
+
+-   Utiliser les DTOs pour la validation des données d'entrée
+-   Implémenter des validateurs personnalisés si nécessaire
+-   Retourner des erreurs de validation structurées
+-   Valider les contraintes d'unicité
+
+## Base de données
+
+### Migrations
+
+-   Utiliser Doctrine Migrations
+-   Créer des migrations pour chaque changement de schéma
+-   Tester les migrations en environnement de développement
+-   Documenter les changements importants
+
+### Entités
+
+-   Utiliser les relations appropriées (OneToMany, ManyToOne, etc.)
+-   Implémenter la suppression logique (soft delete) si nécessaire
+-   Utiliser les index pour optimiser les performances
+-   Gérer les contraintes d'unicité
+
+## Frontend
+
+### Webpack Encore
+
+-   Utiliser les scripts npm définis dans package.json
+-   Configurer les assets dans webpack.config.js
+-   Utiliser les templates Twig pour le rendu
+-   Organiser les styles dans assets/styles/
+
+### Templates Twig
+
+-   Étendre base.html.twig
+-   Utiliser les blocs Twig appropriés
+-   Implémenter la responsivité
+-   Optimiser pour les performances
+
+## Logging et monitoring
+
+### Logging
+
+-   Utiliser PSR-3 LoggerInterface
+-   Logger les actions importantes (création, modification, suppression)
+-   Inclure le contexte approprié dans les logs
+-   Utiliser les niveaux de log appropriés (debug, info, warning, error)
+
+### Gestion d'événements
+
+-   Utiliser EventDispatcher pour les événements métier
+-   Créer des événements personnalisés
+-   Implémenter des listeners appropriés
+-   Éviter les dépendances circulaires
+
+## Performance et optimisation
+
+### Cache
+
+-   Configurer le cache Symfony approprié
+-   Utiliser le cache pour les requêtes coûteuses
+-   Implémenter la mise en cache des réponses API si nécessaire
+
+### Base de données
+
+-   Optimiser les requêtes avec QueryBuilder
+-   Utiliser les index appropriés
+-   Implémenter la pagination pour les grandes listes
+-   Éviter les requêtes N+1
+
+## Configuration
+
+### Environnements
+
+-   Utiliser les fichiers .env pour la configuration
+-   Séparer la configuration par environnement (dev, test, prod)
+-   Utiliser les paramètres Symfony pour la configuration
+-   Sécuriser les informations sensibles
+
+### Bundles
+
+-   Configurer les bundles dans config/bundles.php
+-   Utiliser les recettes Flex appropriées
+-   Configurer les packages dans config/packages/
+
+## Bonnes pratiques
+
+### Code
+
+-   Utiliser des noms de variables et méthodes explicites
+-   Commenter le code complexe
+-   Implémenter la gestion d'erreurs appropriée
+-   Utiliser les types stricts PHP 8.2+
+
+### Sécurité
+
+-   Valider toutes les données d'entrée
+-   Utiliser des tokens CSRF si nécessaire
+-   Implémenter la limitation de taux (rate limiting)
+-   Sécuriser les en-têtes HTTP
+
+### Maintenance
+
+-   Maintenir les dépendances à jour
+-   Documenter les changements importants
+-   Implémenter des tests de régression
+-   Utiliser des outils d'analyse de code (PHPStan, PHP CS Fixer)
+
+## Commandes utiles
+
+### Développement
+
+```bash
+# Démarrer le serveur de développement
+symfony server:start
+
+# Compiler les assets
+npm run dev
+
+# Lancer les tests
+php bin/phpunit
+
+# Créer une migration
+php bin/console make:migration
+
+# Exécuter les migrations
+php bin/console doctrine:migrations:migrate
+```
+
+### Production
+
+```bash
+# Compiler les assets pour la production
+npm run build
+
+# Vider le cache
+php bin/console cache:clear --env=prod
+
+# Optimiser l'autoloader
+composer dump-autoload --optimize --no-dev --classmap-authoritative
+```

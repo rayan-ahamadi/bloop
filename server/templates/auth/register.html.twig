@@ -1,0 +1,347 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - Symfony E.io{% endblock %}
+{% block description %}Créez votre compte Symfony E.io{% endblock %}
+
+{% block body %}
+<div class="auth-container">
+    <div class="auth-header">
+        <h1 class="auth-logo">Symfony E.io</h1>
+        <p class="auth-subtitle">Créez votre compte</p>
+    </div>
+
+    <form class="auth-form" id="registerForm">
+        <div class="form-group">
+            <label for="username" class="form-label">Nom d'utilisateur</label>
+            <input 
+                type="text" 
+                id="username" 
+                name="username" 
+                class="form-input" 
+                placeholder="votre_nom_utilisateur"
+                required
+                autocomplete="username"
+                pattern="[a-zA-Z0-9_]+"
+                minlength="3"
+                maxlength="50"
+            >
+            <div class="error-message" id="usernameError" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                class="form-input" 
+                placeholder="votre@email.com"
+                required
+                autocomplete="email"
+            >
+            <div class="error-message" id="emailError" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="password" class="form-label">Mot de passe</label>
+            <div class="password-field">
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Votre mot de passe"
+                    required
+                    autocomplete="new-password"
+                    minlength="8"
+                >
+                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                    👁
+                </button>
+            </div>
+            <div class="error-message" id="passwordError" style="display: none;"></div>
+            <small style="color: #666; font-size: 0.8rem; margin-top: 5px;">
+                Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
+            <div class="password-field">
+                <input 
+                    type="password" 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    class="form-input" 
+                    placeholder="Confirmez votre mot de passe"
+                    required
+                    autocomplete="new-password"
+                >
+                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                    👁
+                </button>
+            </div>
+            <div class="error-message" id="confirmPasswordError" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="bio" class="form-label">Bio (optionnel)</label>
+            <textarea 
+                id="bio" 
+                name="bio" 
+                class="form-input" 
+                placeholder="Parlez-nous un peu de vous..."
+                rows="3"
+                maxlength="500"
+            ></textarea>
+            <div class="error-message" id="bioError" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="location" class="form-label">Localisation (optionnel)</label>
+            <input 
+                type="text" 
+                id="location" 
+                name="location" 
+                class="form-input" 
+                placeholder="Ville, Pays"
+                maxlength="100"
+            >
+            <div class="error-message" id="locationError" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="website" class="form-label">Site web (optionnel)</label>
+            <input 
+                type="url" 
+                id="website" 
+                name="website" 
+                class="form-input" 
+                placeholder="https://votre-site.com"
+            >
+            <div class="error-message" id="websiteError" style="display: none;"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="registerBtn">
+            Créer mon compte
+        </button>
+    </form>
+
+    <div class="auth-links">
+        <p>Déjà un compte ? <a href="{{ path('app_login') }}" class="auth-link">Se connecter</a></p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+
+    registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Reset des erreurs
+        clearErrors();
+        
+        // Récupération des données
+        const formData = new FormData(registerForm);
+        const data = {
+            username: formData.get('username'),
+            email: formData.get('email'),
+            password: formData.get('password'),
+            confirmPassword: formData.get('confirmPassword'),
+            bio: formData.get('bio') || null,
+            location: formData.get('location') || null,
+            website: formData.get('website') || null
+        };
+
+        // Validation côté client
+        if (!validateForm(data)) {
+            return;
+        }
+
+        // État de chargement
+        setLoading(true);
+
+        try {
+            const response = await fetch('/api/users/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok) {
+                // Inscription réussie
+                showSuccess('Compte créé avec succès ! Redirection vers la connexion...');
+                
+                // Redirection vers la page de connexion
+                setTimeout(() => {
+                    window.location.href = '{{ path("app_login") }}';
+                }, 2000);
+            } else {
+                // Erreur d'inscription
+                if (responseData.errors) {
+                    // Erreurs de validation
+                    Object.keys(responseData.errors).forEach(field => {
+                        showFieldError(field, responseData.errors[field]);
+                    });
+                } else if (responseData.error) {
+                    showError(responseData.error);
+                } else {
+                    showError('Erreur lors de la création du compte');
+                }
+            }
+        } catch (error) {
+            console.error('Erreur d\'inscription:', error);
+            showError('Erreur de connexion. Veuillez réessayer.');
+        } finally {
+            setLoading(false);
+        }
+    });
+});
+
+function validateForm(data) {
+    let isValid = true;
+
+    // Validation du nom d'utilisateur
+    if (!data.username || data.username.length < 3) {
+        showFieldError('username', 'Le nom d\'utilisateur doit faire au moins 3 caractères');
+        isValid = false;
+    } else if (!/^[a-zA-Z0-9_]+$/.test(data.username)) {
+        showFieldError('username', 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres et underscores');
+        isValid = false;
+    }
+
+    // Validation de l'email
+    if (!data.email || !isValidEmail(data.email)) {
+        showFieldError('email', 'Format d\'email invalide');
+        isValid = false;
+    }
+
+    // Validation du mot de passe
+    if (!data.password || data.password.length < 8) {
+        showFieldError('password', 'Le mot de passe doit faire au moins 8 caractères');
+        isValid = false;
+    } else if (!isValidPassword(data.password)) {
+        showFieldError('password', 'Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et un caractère spécial');
+        isValid = false;
+    }
+
+    // Validation de la confirmation du mot de passe
+    if (data.password !== data.confirmPassword) {
+        showFieldError('confirmPassword', 'Les mots de passe ne correspondent pas');
+        isValid = false;
+    }
+
+    // Validation de la bio
+    if (data.bio && data.bio.length > 500) {
+        showFieldError('bio', 'La bio ne peut pas faire plus de 500 caractères');
+        isValid = false;
+    }
+
+    // Validation de la localisation
+    if (data.location && data.location.length > 100) {
+        showFieldError('location', 'La localisation ne peut pas faire plus de 100 caractères');
+        isValid = false;
+    }
+
+    // Validation du site web
+    if (data.website && !isValidUrl(data.website)) {
+        showFieldError('website', 'Format d\'URL invalide');
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+function clearErrors() {
+    document.querySelectorAll('.error-message').forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+    });
+    document.querySelectorAll('.form-input').forEach(el => {
+        el.classList.remove('error');
+    });
+}
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'flex';
+    
+    const form = document.getElementById('registerForm');
+    form.insertBefore(errorDiv, form.firstChild);
+}
+
+function showFieldError(fieldName, message) {
+    const field = document.getElementById(fieldName);
+    const errorDiv = document.getElementById(fieldName + 'Error');
+    
+    if (field && errorDiv) {
+        field.classList.add('error');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'flex';
+    }
+}
+
+function showSuccess(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    successDiv.style.display = 'flex';
+    
+    const form = document.getElementById('registerForm');
+    form.insertBefore(successDiv, form.firstChild);
+}
+
+function setLoading(loading) {
+    const btn = document.getElementById('registerBtn');
+    if (loading) {
+        btn.classList.add('loading');
+        btn.textContent = 'Création du compte...';
+        btn.disabled = true;
+    } else {
+        btn.classList.remove('loading');
+        btn.textContent = 'Créer mon compte';
+        btn.disabled = false;
+    }
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function isValidPassword(password) {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
+    return passwordRegex.test(password);
+}
+
+function isValidUrl(url) {
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const toggle = field.nextElementSibling;
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        toggle.textContent = '🙈';
+    } else {
+        field.type = 'password';
+        toggle.textContent = '👁';
+    }
+}
+</script>
+{% endblock %} 

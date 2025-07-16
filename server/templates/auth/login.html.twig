@@ -1,0 +1,197 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - Symfony E.io{% endblock %}
+{% block description %}Connectez-vous à votre compte Symfony E.io{% endblock %}
+
+{% block body %}
+<div class="auth-container">
+    <div class="auth-header">
+        <h1 class="auth-logo">Symfony E.io</h1>
+        <p class="auth-subtitle">Connectez-vous à votre compte</p>
+    </div>
+
+    <form class="auth-form" id="loginForm">
+        <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                class="form-input" 
+                placeholder="votre@email.com"
+                required
+                autocomplete="email"
+            >
+            <div class="error-message" id="emailError" style="display: none;"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="password" class="form-label">Mot de passe</label>
+            <div class="password-field">
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Votre mot de passe"
+                    required
+                    autocomplete="current-password"
+                >
+                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                    👁
+                </button>
+            </div>
+            <div class="error-message" id="passwordError" style="display: none;"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+            Se connecter
+        </button>
+    </form>
+
+    <div class="auth-links">
+        <p>Pas encore de compte ? <a href="{{ path('app_register') }}" class="auth-link">Créer un compte</a></p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Reset des erreurs
+        clearErrors();
+        
+        // Récupération des données
+        const formData = new FormData(loginForm);
+        const email = formData.get('email');
+        const password = formData.get('password');
+
+        // Validation côté client
+        if (!email || !password) {
+            showError('Veuillez remplir tous les champs');
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            showFieldError('email', 'Format d\'email invalide');
+            return;
+        }
+
+        // État de chargement
+        setLoading(true);
+
+        try {
+            const response = await fetch('/api/login_check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: email,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Connexion réussie
+                localStorage.setItem('jwt_token', data.token);
+                showSuccess('Connexion réussie ! Redirection...');
+                
+                // Redirection vers l'application React
+                setTimeout(() => {
+                    window.location.href = '/app'; // Ajustez selon votre configuration
+                }, 1500);
+            } else {
+                // Erreur de connexion
+                if (data.message) {
+                    showError(data.message);
+                } else {
+                    showError('Email ou mot de passe incorrect');
+                }
+            }
+        } catch (error) {
+            console.error('Erreur de connexion:', error);
+            showError('Erreur de connexion. Veuillez réessayer.');
+        } finally {
+            setLoading(false);
+        }
+    });
+});
+
+function clearErrors() {
+    document.querySelectorAll('.error-message').forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+    });
+    document.querySelectorAll('.form-input').forEach(el => {
+        el.classList.remove('error');
+    });
+}
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'flex';
+    
+    const form = document.getElementById('loginForm');
+    form.insertBefore(errorDiv, form.firstChild);
+}
+
+function showFieldError(fieldName, message) {
+    const field = document.getElementById(fieldName);
+    const errorDiv = document.getElementById(fieldName + 'Error');
+    
+    field.classList.add('error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'flex';
+}
+
+function showSuccess(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    successDiv.style.display = 'flex';
+    
+    const form = document.getElementById('loginForm');
+    form.insertBefore(successDiv, form.firstChild);
+}
+
+function setLoading(loading) {
+    const btn = document.getElementById('loginBtn');
+    if (loading) {
+        btn.classList.add('loading');
+        btn.textContent = 'Connexion...';
+        btn.disabled = true;
+    } else {
+        btn.classList.remove('loading');
+        btn.textContent = 'Se connecter';
+        btn.disabled = false;
+    }
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const toggle = field.nextElementSibling;
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        toggle.textContent = '🙈';
+    } else {
+        field.type = 'password';
+        toggle.textContent = '👁';
+    }
+}
+</script>
+{% endblock %} 
