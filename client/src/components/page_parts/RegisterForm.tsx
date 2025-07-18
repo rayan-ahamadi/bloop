@@ -27,7 +27,7 @@ function RegisterForm() {
     bio?: string | null;
     avatarUrl?: string | null;
     bannerUrl?: string | null;
-    birthDate?: string | null;
+    birthDate?: string;
     themes?: string[];
     confirmPassword?: string;
     terms?: boolean;
@@ -79,6 +79,7 @@ function RegisterForm() {
   const [step, setStep] = useState(1)
 
   async function nextStep() {
+    console.log(form.formState.errors);
     let valid;
     if (step === 1) {
       valid = await form.trigger(["name", "email", "birthDate"])
@@ -115,11 +116,11 @@ function RegisterForm() {
         {step === 4 && <Step4 form={form} />}
 
         <div className="flex flex-col gap-3 mt-4">
-          {step > 1 && <Button type="button" variant={"secondaryNoShadow"} onClick={prevStep}>‹ Précédent</Button>}
+          {step > 1 && <Button type="button" variant={"secondaryNoShadow"} className="text-2xl" onClick={prevStep}>‹ Précédent</Button>}
           {step < 4 ? (
-            <Button type="button" variant={"defaultNoShadow"} onClick={nextStep}>Suivant ›</Button>
+            <Button type="button" variant={"defaultNoShadow"} className="text-2xl" onClick={nextStep}>Suivant ›</Button>
           ) : (
-            <Input type="submit" value={"S'inscrire ›"} className="font-bold" />
+            <Input type="submit" value={"S'inscrire ›"} className="font-bold bg-primary hover:bg-primary/80" />
           )}
         </div>
       </form>

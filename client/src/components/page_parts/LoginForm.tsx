@@ -55,6 +55,7 @@ function LoginForm() {
     <Form {...form}>
       <form onSubmit={onSubmit} action="#" className="flex flex-col gap-4">
         <Toaster richColors position="top-center" closeButton={false} />
+
         <div className="flex flex-col gap-2 ">
           <FormField
             control={form.control}
@@ -84,7 +85,7 @@ function LoginForm() {
           />
         </div>
         <div className="flex flex-col gap-3 mt-4">
-          <Input type="submit" value={"Connexion ›"} className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 w-full border-2 border-secondary-dark text-secondary-dark hover:shadow-[4px_4px_0_0_black] ease-in duration-100  font-bold" />
+          <Input type="submit" value={"Connexion ›"} className="bg-primary shadow-xs hover:bg-primary/90 w-full border-2 border-secondary-dark text-secondary-dark hover:shadow-[4px_4px_0_0_black] ease-in duration-100 font-bold cursor-pointer" />
         </div>
       </form>
     </Form>

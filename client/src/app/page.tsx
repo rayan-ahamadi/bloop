@@ -71,21 +71,21 @@ export default function Home() {
 
         <div id="email" className="p-8 flex flex-col gap-1 flex-grow-1 md:px-20 ">
           <Dialog>
-            <DialogTrigger>
-              <Button className="mb-5 text-[17px] flex flex-row justify-center items-center md:w-2/4 md:text-[20px]">
-                <Image
-                  className="mr-2"
-                  src="/images/icons/+.svg"
-                  alt="+ icons"
-                  height={20}
-                  width={20}
-                />
-                Créez un compte
-              </Button>
+            <DialogTrigger variant="default" className="md:mt-2 mb-5 text-[17px] flex flex-row justify-center items-center md:w-2/4 md:text-[20px]">
+              <Image
+                className="mr-2"
+                src="/images/icons/+.svg"
+                alt="+ icons"
+                height={20}
+                width={20}
+              />
+              <span>Créez un compte</span>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle></DialogTitle>
+                <DialogTitle className="text-3xl font-bold">
+                  Inscrivez-vous !
+                </DialogTitle>
                 <DialogDescription></DialogDescription>
               </DialogHeader>
               {/* Contenu de la modal */}
@@ -98,15 +98,17 @@ export default function Home() {
           <p className="text-[14px] w-2/4">En vous inscrivant, vous acceptez nos <Link href={"#"} className="text-primary">Conditions d’utilisation</Link> , notre <Link href={"#"} className="text-primary">Politique de confidentialité </Link>  et notre <Link href={"#"} className="text-primary">Utilisation des cookies</Link>.</p>
           <p className="text-[14px] flex-grow-1 mt-4">Vous avez déjà un compte ?
             <Dialog>
-              <DialogTrigger className="md:block md:mt-5 md:w-2/4">
+              <DialogTrigger className="md:flex flex-row justify-center items-center md:mt-5 md:w-2/4 " variant="accent">
                 <span className="text-primary cursor-pointer md:hidden">&nbsp; Connectez-vous</span>
-                <Button variant={"accent"} className="hidden md:flex text-[17px] flex-row justify-center items-center md:w-full md:text-[20px]">
+                <span className="hidden w-full h-full text-[20px] md:flex flex-row justify-center items-center">
                   Se connecter
-                </Button>
+                </span>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle></DialogTitle>
+                  <DialogTitle className="text-3xl font-bold">
+                    Connectez-vous !
+                  </DialogTitle>
                   <DialogDescription></DialogDescription>
                 </DialogHeader>
                 {/* Contenu de la modal */}

@@ -12,7 +12,7 @@ export default function BloopPost() {
 
     const handlePost = () => {
         // Logic to handle posting the bloop
-        toast.success("Bloop posted successfully!");
+        toast.success("Bloop posté avec succès!");
     };
 
     return (

@@ -5,7 +5,27 @@ export const Step1Schema = z.object({
   name: z.string().min(2),
   username: z.string().min(2),
   email: z.string().email(),
-  birthdate: z.string(),
+  birthDate: z
+    .string()
+    .min(1, { message: "Veuillez entrer votre date de naissance" })
+    .refine(
+      (dateStr) => {
+        const birthDate = new Date(dateStr);
+        if (isNaN(birthDate.getTime())) return false;
+
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        return age >= 13;
+      },
+      {
+        message: "Vous devez avoir au moins 13 ans",
+      }
+    ),
 });
 
 export const Step2Schema = z
@@ -34,6 +54,18 @@ export const Step4Schema = z.object({
   bio: z.string().max(500),
 });
 
-export const FinalSchema = Step1Schema.merge(Step2Schema)
-  .merge(Step3Schema)
-  .merge(Step4Schema);
+// To merge, extract the base object from Step2Schema (before .refine)
+const Step2BaseSchema = z.object({
+  password: z.string().min(6),
+  confirmPassword: z.string().min(6),
+  terms: z.boolean().refine((v) => v, {
+    message: "Vous devez accepter les conditions",
+  }),
+});
+
+export const FinalSchema = z.object({
+  ...Step1Schema.shape,
+  ...Step2BaseSchema.shape,
+  ...Step3Schema.shape,
+  ...Step4Schema.shape,
+});

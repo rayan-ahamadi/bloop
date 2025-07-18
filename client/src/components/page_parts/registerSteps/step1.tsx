@@ -50,7 +50,7 @@ export default function Step1({ form }: Props) {
             />
             <FormField
                 control={form.control}
-                name="birthdate"
+                name="birthDate"
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Date de naissance</FormLabel>

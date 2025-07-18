@@ -5,17 +5,39 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { buttonVariants } from "./button"
 
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props}  />
+  return <DialogPrimitive.Root data-slot="dialog" {...props} />
+}
+
+interface DialogTriggerProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Trigger> {
+  variant?: "default" | "defaultNoShadow" | "secondary" | "secondaryNoShadow" | "accent" | "ghost" | "link"
+  size?: "default" | "sm" | "lg" | "icon"
+  asChild?: boolean
 }
 
 function DialogTrigger({
+  variant,
+  size,
+  className,
+  asChild = true,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+}: DialogTriggerProps) {
+  return (
+    <DialogPrimitive.Trigger
+      asChild={asChild}
+      data-slot="dialog-trigger"
+      {...props}
+    >
+      <button className={cn(buttonVariants({ variant, size }), className)} >
+        {props.children}
+      </button>
+    </DialogPrimitive.Trigger>
+  )
 }
 
 function DialogPortal({
@@ -71,7 +93,7 @@ function DialogContent({
             data-slot="dialog-close"
             className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
-            <XIcon/>
+            <XIcon />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}
