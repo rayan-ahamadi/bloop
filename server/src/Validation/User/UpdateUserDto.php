@@ -7,6 +7,23 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class UpdateUserDto
 {
+
+    #[Assert\NotBlank(message: 'Le nom est obligatoire', groups: ['user:create'])]
+    #[Assert\Length(
+        min: 2,
+        max: 50,
+        minMessage: 'Le nom doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Le nom ne peut pas faire plus de {{ limit }} caractères',
+        groups: ['user:create', 'user:update']
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/',
+        message: 'Le nom ne peut contenir que des lettres, des espaces et des tirets',
+        groups: ['user:create', 'user:update']
+    )]
+    #[SerializedName('name')]
+    private string $name = '';
+
     #[Assert\Length(
         min: 3,
         max: 50,
@@ -84,7 +101,63 @@ class UpdateUserDto
     #[SerializedName('timezone')]
     private ?string $timezone = null;
 
+    #[Assert\NotBlank(message: 'Les thèmes sont obligatoires', groups: ['user:create'])]
+    #[Assert\Type(type: 'array', message: 'Les thèmes doivent être un tableau', groups: ['user:create'])]
+    #[Assert\Count(
+        min: 1,
+        minMessage: 'Vous devez sélectionner au moins un thème',
+        groups: ['user:create']
+    )]
+    #[Assert\All(
+        constraints: [
+            new Assert\NotBlank(message: 'Chaque thème ne peut pas être vide', groups: ['user:create']),
+            new Assert\Length(
+                max: 50,
+                maxMessage: 'Chaque thème ne peut pas faire plus de {{ limit }} caractères',
+                groups: ['user:create']
+            ),
+            new Assert\Regex(
+                pattern: '/^[a-zA-Z0-9_]+$/',
+                message: 'Chaque thème ne peut contenir que des lettres, des chiffres et des underscores',
+                groups: ['user:create']
+            )
+        ],
+    )]
+    private array $themes = [];
+
     // Getters and Setters
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+
+
+
+    /**
+     * @return array
+     */
+    public function getThemes(): array
+    {
+        return $this->themes;
+    }
+
+    /**
+     * @param array $themes
+     * @return self
+     */
+    public function setThemes(array $themes): self
+    {
+        $this->themes = $themes;
+        return $this;
+    }
+
     public function getUsername(): ?string
     {
         return $this->username;

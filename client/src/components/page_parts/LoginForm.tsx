@@ -6,11 +6,14 @@ import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { redirect } from 'next/navigation'
+import { loginUser } from "@/services/API/user.api"
+import { toast } from "sonner"
+import { Toaster } from "@/components/ui/sonner"
 
 
 
 const schema = z.object({
-  username: z.string().min(1, { message: "Ce compte n'existe pas" }),
+  email: z.string().min(1, { message: "Ce compte n'existe pas" }),
   password: z.string().min(8, { message: "Le mot de passe doit contenir au moins 8 caractères" }),
 })
 
@@ -29,8 +32,20 @@ function LoginForm() {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = form.getValues();
-    console.log(formData);
-    redirect("/dashboard");
+    const response = await loginUser({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (response) {
+      console.log("Connexion réussie", response);
+      localStorage.setItem("token", response.token);
+      redirect("/dashboard");
+    } else {
+      console.error("Erreur lors de la connexion");
+      toast.error("Erreur lors de la connexion. Veuillez vérifier vos identifiants.");
+    }
+
   }
 
 
@@ -39,6 +54,7 @@ function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={onSubmit} action="#" className="flex flex-col gap-4">
+        <Toaster richColors position="top-center" closeButton={false} />
         <div className="flex flex-col gap-2 ">
           <FormField
             control={form.control}

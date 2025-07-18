@@ -1,13 +1,25 @@
+import { Post } from "@/types/post.types";
+
 export type User = {
-  id: string;
+  id: number;
   name: string;
-  email: string;
-  password: string;
-  birthdate: string;
-  themes: string[];
-  profilePicture: string;
-  bio: string;
+  username: string;
+  email: string | null;
+  password?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  bannerUrl?: string | null;
+  birthDate?: string | null; // ISO date string
+  themes?: string[]; // JSON array
+  createdAt: string; // ISO datetime string
+  updatedAt?: string | null;
+  deletedAt?: string | null;
   followers_nb: number;
-  subcription_nb: number;
-  registered_at: string;
+  following_nb: number;
+  posts?: Post[];
+  following?: User[];
+  followers?: User[];
+  likes?: Post[];
+  reposts?: Post[];
+  savedPosts?: Post[];
 };

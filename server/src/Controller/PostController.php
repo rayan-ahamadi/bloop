@@ -35,39 +35,127 @@ class PostController extends AbstractController
     ) {
     }
 
+    // #[Route('', name: 'post_create', methods: ['POST'])]
+    // public function create(Request $request): JsonResponse
+    // {
+    //     try {
+    //         $content = $request->getContent();
+    //         $this->logger->debug('Contenu de la requête reçue', ['content' => $content]);
+
+    //         // Désérialisation des données JSON vers le DTO
+    //         $createPostDto = $this->serializer->deserialize(
+    //             $content,
+    //             CreatePostDto::class,
+    //             'json'
+    //         );
+
+    //         $this->logger->debug('DTO après désérialisation', [
+    //             'content' => $createPostDto->getContent(),
+    //             'type' => $createPostDto->getType(),
+    //             'parent_post_id' => $createPostDto->getParentPostId()
+    //         ]);
+
+    //         // Validation du DTO
+    //         $errors = $this->validator->validate($createPostDto);
+    //         if (count($errors) > 0) {
+    //             $this->logger->debug('Erreurs de validation', [
+    //                 'errors' => $this->formatValidationErrors($errors)
+    //             ]);
+    //             return $this->json(
+    //                 ['errors' => $this->formatValidationErrors($errors)],
+    //                 Response::HTTP_BAD_REQUEST
+    //             );
+    //         }
+
+    //         // Récupérer l'utilisateur connecté
+    //         /** @var User $user */
+    //         $user = $this->getUser();
+    //         if (!$user) {
+    //             return $this->json(
+    //                 ['error' => 'Utilisateur non authentifié'],
+    //                 Response::HTTP_UNAUTHORIZED
+    //             );
+    //         }
+
+    //         // Création de l'entité Post
+    //         $post = new Post();
+    //         $this->createPostFromDto($post, $createPostDto, $user);
+
+    //         // Persistance en base de données
+    //         $this->postRepository->save($post, true);
+
+    //         // Logging
+    //         $this->logger->info('Nouveau post créé', [
+    //             'post_id' => $post->getId(),
+    //             'user_id' => $user->getId(),
+    //             'type' => $post->getType()
+    //         ]);
+
+    //         // Retour de la réponse
+    //         return $this->json(
+    //             [
+    //                 'message' => 'Post créé avec succès',
+    //                 'post' => $post,
+    //                 'links' => [
+    //                     'self' => $this->generateUrl('post_read', ['id' => $post->getId()]),
+    //                     'update' => $this->generateUrl('post_update', ['id' => $post->getId()]),
+    //                     'delete' => $this->generateUrl('post_delete', ['id' => $post->getId()])
+    //                 ]
+    //             ],
+    //             Response::HTTP_CREATED,
+    //             [],
+    //             ['groups' => ['post:read']]
+    //         );
+
+    //     } catch (NotEncodableValueException $e) {
+    //         $this->logger->error('Erreur de désérialisation JSON', [
+    //             'error' => $e->getMessage(),
+    //             'content' => $request->getContent()
+    //         ]);
+    //         return $this->json(
+    //             ['error' => 'Format JSON invalide'],
+    //             Response::HTTP_BAD_REQUEST
+    //         );
+    //     } catch (\Exception $e) {
+    //         $this->logger->error('Erreur inattendue', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+    //         return $this->json(
+    //             ['error' => 'Une erreur est survenue lors de la création du post'],
+    //             Response::HTTP_INTERNAL_SERVER_ERROR
+    //         );
+    //     }
+    // }
+
     #[Route('', name: 'post_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         try {
-            $content = $request->getContent();
-            $this->logger->debug('Contenu de la requête reçue', ['content' => $content]);
+            // Récupération des champs depuis FormData (multipart/form-data)
+            $content = $request->request->get('content');
+            $type = $request->request->get('type');
+            $parentPostId = $request->request->get('parent_post_id');
+            $language = $request->request->get('language', 'fr');
+            $imageFile = $request->files->get('image');
 
-            // Désérialisation des données JSON vers le DTO
-            $createPostDto = $this->serializer->deserialize(
-                $content,
-                CreatePostDto::class,
-                'json'
-            );
+            // Construction manuelle du DTO
+            $createPostDto = new CreatePostDto();
+            $createPostDto->setContent($content);
+            $createPostDto->setType($type);
+            $createPostDto->setParentPostId($parentPostId);
+            $createPostDto->setLanguage($language);
 
-            $this->logger->debug('DTO après désérialisation', [
-                'content' => $createPostDto->getContent(),
-                'type' => $createPostDto->getType(),
-                'parent_post_id' => $createPostDto->getParentPostId()
-            ]);
-
-            // Validation du DTO
+            // Validation
             $errors = $this->validator->validate($createPostDto);
             if (count($errors) > 0) {
-                $this->logger->debug('Erreurs de validation', [
-                    'errors' => $this->formatValidationErrors($errors)
-                ]);
                 return $this->json(
                     ['errors' => $this->formatValidationErrors($errors)],
                     Response::HTTP_BAD_REQUEST
                 );
             }
 
-            // Récupérer l'utilisateur connecté
+            // Récupération de l'utilisateur
             /** @var User $user */
             $user = $this->getUser();
             if (!$user) {
@@ -77,21 +165,21 @@ class PostController extends AbstractController
                 );
             }
 
-            // Création de l'entité Post
+            // Création du Post
             $post = new Post();
             $this->createPostFromDto($post, $createPostDto, $user);
 
-            // Persistance en base de données
+            // Gestion de l'image (si présente)
+            if ($imageFile) {
+                $uploadsDir = $this->getParameter('uploads_directory'); // défini dans services.yaml
+                $filename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move($uploadsDir, $filename);
+                $post->setImageUrl('/uploads/' . $filename); // Chemin public relatif
+            }
+
+            // Sauvegarde
             $this->postRepository->save($post, true);
 
-            // Logging
-            $this->logger->info('Nouveau post créé', [
-                'post_id' => $post->getId(),
-                'user_id' => $user->getId(),
-                'type' => $post->getType()
-            ]);
-
-            // Retour de la réponse
             return $this->json(
                 [
                     'message' => 'Post créé avec succès',
@@ -107,17 +195,8 @@ class PostController extends AbstractController
                 ['groups' => ['post:read']]
             );
 
-        } catch (NotEncodableValueException $e) {
-            $this->logger->error('Erreur de désérialisation JSON', [
-                'error' => $e->getMessage(),
-                'content' => $request->getContent()
-            ]);
-            return $this->json(
-                ['error' => 'Format JSON invalide'],
-                Response::HTTP_BAD_REQUEST
-            );
         } catch (\Exception $e) {
-            $this->logger->error('Erreur inattendue', [
+            $this->logger->error('Erreur lors de la création du post', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -127,6 +206,7 @@ class PostController extends AbstractController
             );
         }
     }
+
 
     #[Route('', name: 'post_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
@@ -244,7 +324,93 @@ class PostController extends AbstractController
         );
     }
 
-    #[Route('/{id}', name: 'post_update', methods: ['PUT'])]
+    // #[Route('/{id}', name: 'post_update', methods: ['POST'])]
+    // public function update(int $id, Request $request): JsonResponse
+    // {
+    //     try {
+    //         $post = $this->postRepository->find($id);
+    //         if (!$post) {
+    //             return $this->json(
+    //                 ['error' => 'Post non trouvé'],
+    //                 Response::HTTP_NOT_FOUND
+    //             );
+    //         }
+
+    //         // Vérifier que l'utilisateur est le propriétaire du post
+    //         /** @var User $user */
+    //         $user = $this->getUser();
+    //         if ($post->getUser()->getId() !== $user->getId()) {
+    //             throw new AccessDeniedException('Vous n\'êtes pas autorisé à modifier ce post');
+    //         }
+
+    //         $content = $request->getContent();
+    //         $this->logger->debug('Contenu de la requête de mise à jour', ['content' => $content]);
+
+    //         // Désérialisation des données JSON vers le DTO
+    //         $updatePostDto = $this->serializer->deserialize(
+    //             $content,
+    //             UpdatePostDto::class,
+    //             'json'
+    //         );
+
+    //         // Validation du DTO
+    //         $errors = $this->validator->validate($updatePostDto);
+    //         if (count($errors) > 0) {
+    //             return $this->json(
+    //                 ['errors' => $this->formatValidationErrors($errors)],
+    //                 Response::HTTP_BAD_REQUEST
+    //             );
+    //         }
+
+    //         // Mise à jour du post
+    //         $this->updatePostFromDto($post, $updatePostDto);
+
+    //         // Persistance en base de données
+    //         $this->postRepository->save($post, true);
+
+    //         // Logging
+    //         $this->logger->info('Post mis à jour', [
+    //             'post_id' => $post->getId(),
+    //             'user_id' => $user->getId()
+    //         ]);
+
+    //         return $this->json(
+    //             [
+    //                 'message' => 'Post mis à jour avec succès',
+    //                 'post' => $post
+    //             ],
+    //             Response::HTTP_OK,
+    //             [],
+    //             ['groups' => ['post:read']]
+    //         );
+
+    //     } catch (AccessDeniedException $e) {
+    //         return $this->json(
+    //             ['error' => $e->getMessage()],
+    //             Response::HTTP_FORBIDDEN
+    //         );
+    //     } catch (NotEncodableValueException $e) {
+    //         $this->logger->error('Erreur de désérialisation JSON', [
+    //             'error' => $e->getMessage(),
+    //             'content' => $request->getContent()
+    //         ]);
+    //         return $this->json(
+    //             ['error' => 'Format JSON invalide'],
+    //             Response::HTTP_BAD_REQUEST
+    //         );
+    //     } catch (\Exception $e) {
+    //         $this->logger->error('Erreur inattendue', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+    //         return $this->json(
+    //             ['error' => 'Une erreur est survenue lors de la mise à jour du post'],
+    //             Response::HTTP_INTERNAL_SERVER_ERROR
+    //         );
+    //     }
+    // }
+
+    #[Route('/{id}', name: 'post_update', methods: ['POST'])]
     public function update(int $id, Request $request): JsonResponse
     {
         try {
@@ -256,22 +422,21 @@ class PostController extends AbstractController
                 );
             }
 
-            // Vérifier que l'utilisateur est le propriétaire du post
             /** @var User $user */
             $user = $this->getUser();
             if ($post->getUser()->getId() !== $user->getId()) {
                 throw new AccessDeniedException('Vous n\'êtes pas autorisé à modifier ce post');
             }
 
-            $content = $request->getContent();
-            $this->logger->debug('Contenu de la requête de mise à jour', ['content' => $content]);
+            // Lecture des champs depuis FormData
+            $content = $request->request->get('content');
+            $language = $request->request->get('language', 'fr');
+            $imageFile = $request->files->get('image');
 
-            // Désérialisation des données JSON vers le DTO
-            $updatePostDto = $this->serializer->deserialize(
-                $content,
-                UpdatePostDto::class,
-                'json'
-            );
+            // Construction manuelle du DTO
+            $updatePostDto = new UpdatePostDto();
+            $updatePostDto->setContent($content);
+            $updatePostDto->setLanguage($language);
 
             // Validation du DTO
             $errors = $this->validator->validate($updatePostDto);
@@ -282,13 +447,28 @@ class PostController extends AbstractController
                 );
             }
 
-            // Mise à jour du post
+            // Mise à jour via le DTO
             $this->updatePostFromDto($post, $updatePostDto);
 
-            // Persistance en base de données
+            // Gestion de l'image
+            if ($imageFile) {
+                $uploadsDir = $this->getParameter('uploads_directory');
+                $filename = uniqid() . '.' . $imageFile->guessExtension();
+                $imageFile->move($uploadsDir, $filename);
+
+                // Optionnel : suppression de l'ancienne image
+                if ($post->getImageUrl()) {
+                    $oldPath = $uploadsDir . '/' . basename($post->getImageUrl());
+                    if (file_exists($oldPath)) {
+                        unlink($oldPath);
+                    }
+                }
+
+                $post->setImageUrl('/uploads/' . $filename);
+            }
+
             $this->postRepository->save($post, true);
 
-            // Logging
             $this->logger->info('Post mis à jour', [
                 'post_id' => $post->getId(),
                 'user_id' => $user->getId()
@@ -309,15 +489,6 @@ class PostController extends AbstractController
                 ['error' => $e->getMessage()],
                 Response::HTTP_FORBIDDEN
             );
-        } catch (NotEncodableValueException $e) {
-            $this->logger->error('Erreur de désérialisation JSON', [
-                'error' => $e->getMessage(),
-                'content' => $request->getContent()
-            ]);
-            return $this->json(
-                ['error' => 'Format JSON invalide'],
-                Response::HTTP_BAD_REQUEST
-            );
         } catch (\Exception $e) {
             $this->logger->error('Erreur inattendue', [
                 'error' => $e->getMessage(),
@@ -329,6 +500,7 @@ class PostController extends AbstractController
             );
         }
     }
+
 
     #[Route('/{id}', name: 'post_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse

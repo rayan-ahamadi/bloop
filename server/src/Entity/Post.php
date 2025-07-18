@@ -86,6 +86,10 @@ class Post
     #[Groups(['post:read'])]
     private string $status = 'active';
 
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups(['post:read', 'post:create', 'post:update'])]
+    private string $imageUrl = '';
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['post:read', 'post:list'])]
     private ?\DateTimeInterface $createdAt = null;
@@ -399,5 +403,16 @@ class Post
     public function getSavedPosts(): Collection
     {
         return $this->savedPosts;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): static
+    {
+        $this->imageUrl = $imageUrl;
+        return $this;
     }
 } 

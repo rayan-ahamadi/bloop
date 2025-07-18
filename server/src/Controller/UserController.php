@@ -41,57 +41,40 @@ class UserController extends AbstractController
     public function create(Request $request): JsonResponse
     {
         try {
-            $content = $request->getContent();
-            $this->logger->debug('Contenu de la requête reçu', ['content' => $content]);
-
-            // Désérialisation des données JSON vers le DTO
-            $createUserDto = $this->serializer->deserialize(
-                $content,
-                CreateUserDto::class,
-                'json'
-            );
-
-            $this->logger->debug('DTO après désérialisation', [
-                'username' => $createUserDto->getUsername(),
-                'email' => $createUserDto->getEmail(),
-                'password' => '***'
-            ]);
-
-            // Validation du DTO
-            $errors = $this->validator->validate($createUserDto);
-            if (count($errors) > 0) {
-                $this->logger->debug('Erreurs de validation', [
-                    'errors' => $this->formatValidationErrors($errors)
-                ]);
-                return $this->json(
-                    ['errors' => $this->formatValidationErrors($errors)],
-                    Response::HTTP_BAD_REQUEST
-                );
-            }
-
-            // Vérification de l'unicité
-            if ($this->userRepository->findByEmail($createUserDto->getEmail())) {
-                return $this->json(
-                    ['error' => 'Cet email est déjà utilisé'],
-                    Response::HTTP_CONFLICT
-                );
-            }
-
-            if ($this->userRepository->findByUsername($createUserDto->getUsername())) {
-                return $this->json(
-                    ['error' => 'Ce nom d\'utilisateur est déjà utilisé'],
-                    Response::HTTP_CONFLICT
-                );
-            }
-
-            // Création de l'entité User
+            $username = $request->request->get('username');
+            $email = $request->request->get('email');
+            $password = $request->request->get('password');
+    
+            // Fichiers image
+            /** @var UploadedFile|null $avatarFile */
+            $avatarFile = $request->files->get('avatar');
+    
+            /** @var UploadedFile|null $bannerFile */
+            $bannerFile = $request->files->get('banner');
+    
+            // Créer utilisateur
             $user = new User();
-            $this->createUserFromDto($user, $createUserDto);
-
-            // Hachage du mot de passe
-            $hashedPassword = $this->passwordHasher->hashPassword($user, $createUserDto->getPassword());
+            $user->setUsername($username);
+            $user->setEmail($email);
+    
+            // Hash du mot de passe
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $password);
             $user->setPassword($hashedPassword);
-
+    
+            // Avatar
+            if ($avatarFile) {
+                $avatarFilename = uniqid('avatar_') . '.' . $avatarFile->guessExtension();
+                $avatarFile->move($this->getParameter('avatar_directory'), $avatarFilename);
+                $user->setAvatarUrl('/uploads/avatars/' . $avatarFilename);
+            }
+    
+            // Bannière
+            if ($bannerFile) {
+                $bannerFilename = uniqid('banner_') . '.' . $bannerFile->guessExtension();
+                $bannerFile->move($this->getParameter('banner_directory'), $bannerFilename);
+                $user->setBannerUrl('/uploads/banners/' . $bannerFilename);
+            }
+    
             // Persistance en base de données
             $this->userRepository->save($user, true);
 
@@ -213,76 +196,53 @@ class UserController extends AbstractController
         );
     }
 
-    #[Route('/{id}', name: 'user_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'user_update', methods: ['POST'])]
     public function update(int $id, Request $request): JsonResponse
     {
-        $this->logger->debug('Début de la mise à jour de l\'utilisateur');
-        $this->logger->debug('ID de l\'utilisateur à mettre à jour: ' . $id);
+        $this->logger->debug("Début de la mise à jour de l'utilisateur $id");
 
         $user = $this->userRepository->find($id);
         if (!$user) {
-            $this->logger->debug('Utilisateur non trouvé');
             return $this->json(['error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
 
-        $this->logger->debug('Contenu de la requête reçu');
-        $content = $request->getContent();
-        $this->logger->debug($content);
+        // Récupération des données du formulaire
+        $username = $request->request->get('username');
+        $email = $request->request->get('email');
+        $bio = $request->request->get('bio');
+        $location = $request->request->get('location');
 
-        if (empty($content)) {
-            $this->logger->debug('Contenu de la requête vide');
-            return $this->json(['error' => 'Le contenu de la requête ne peut pas être vide'], Response::HTTP_BAD_REQUEST);
+        /** @var UploadedFile|null $avatarFile */
+        $avatarFile = $request->files->get('avatar');
+
+        /** @var UploadedFile|null $bannerFile */
+        $bannerFile = $request->files->get('banner');
+
+        // Mise à jour des données de l'utilisateur
+        if ($username) $user->setUsername($username);
+        if ($email) $user->setEmail($email);
+        if ($bio) $user->setBio($bio);
+        if ($location) $user->setLocation($location);
+
+        // Gestion des fichiers
+        if ($avatarFile) {
+            $avatarFilename = uniqid('avatar_') . '.' . $avatarFile->guessExtension();
+            $avatarFile->move($this->getParameter('avatar_directory'), $avatarFilename);
+            $user->setAvatarUrl('/uploads/avatars/' . $avatarFilename);
         }
 
-        try {
-            $this->logger->debug('Données JSON décodées');
-            $data = json_decode($content, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->logger->error('Erreur de décodage JSON: ' . json_last_error_msg());
-                return $this->json(['error' => 'Format JSON invalide'], Response::HTTP_BAD_REQUEST);
-            }
-
-            // Désérialiser les nouvelles valeurs
-            $dto = $this->serializer->deserialize(
-                $content,
-                UpdateUserDto::class,
-                'json'
-            );
-
-            $this->logger->debug('DTO après désérialisation');
-            $this->logger->debug('Username: ' . ($dto->getUsername() ?? 'null'));
-            $this->logger->debug('Email: ' . ($dto->getEmail() ?? 'null'));
-            $this->logger->debug('Bio: ' . ($dto->getBio() ?? 'null'));
-            $this->logger->debug('Location: ' . ($dto->getLocation() ?? 'null'));
-
-            $violations = $this->userValidator->validateUpdateUser($dto, $user);
-            $this->logger->debug('Violations de validation');
-            $this->logger->debug(json_encode($violations));
-
-            if (!empty($violations)) {
-                $errors = [];
-                foreach ($violations as $violation) {
-                    $errors[$violation->getPropertyPath()] = $violation->getMessage();
-                }
-                return $this->json(['errors' => $errors], Response::HTTP_BAD_REQUEST);
-            }
-
-            $this->updateUserFromDto($user, $dto);
-            $this->entityManager->flush();
-
-            $this->logger->debug('Utilisateur mis à jour avec succès');
-            return $this->json(
-                $user,
-                Response::HTTP_OK,
-                [],
-                ['groups' => ['user:read']]
-            );
-        } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la mise à jour: ' . $e->getMessage());
-            $this->logger->error('Stack trace: ' . $e->getTraceAsString());
-            return $this->json(['error' => 'Une erreur est survenue'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        if ($bannerFile) {
+            $bannerFilename = uniqid('banner_') . '.' . $bannerFile->guessExtension();
+            $bannerFile->move($this->getParameter('banner_directory'), $bannerFilename);
+            $user->setBannerUrl('/uploads/banners/' . $bannerFilename);
         }
+
+        $this->entityManager->flush();
+
+        $this->logger->debug('Utilisateur mis à jour avec succès');
+        return $this->json($user, Response::HTTP_OK, [], ['groups' => ['user:read']]);
     }
+
 
     #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
@@ -303,6 +263,11 @@ class UserController extends AbstractController
 
     private function updateUserFromDto(User $user, UpdateUserDto $dto): void
     {
+
+        if($dto->getName() !== null) {
+            $user->setName($dto->getName());
+        }
+
         if ($dto->getUsername() !== null) {
             $user->setUsername($dto->getUsername());
         }
@@ -319,6 +284,10 @@ class UserController extends AbstractController
         if ($dto->getBio() !== null) {
             $user->setBio($dto->getBio());
         }
+
+        if ($dto->getThemes() !== null) {
+            $user->setThemes($dto->getThemes());
+        }
         
         if ($dto->getAvatarUrl() !== null) {
             $user->setAvatarUrl($dto->getAvatarUrl());
@@ -327,35 +296,24 @@ class UserController extends AbstractController
         if ($dto->getBannerUrl() !== null) {
             $user->setBannerUrl($dto->getBannerUrl());
         }
-        
-        if ($dto->getLocation() !== null) {
-            $user->setLocation($dto->getLocation());
-        }
-        
-        if ($dto->getWebsite() !== null) {
-            $user->setWebsite($dto->getWebsite());
-        }
+    
         
         if ($dto->getBirthDate() !== null) {
             $user->setBirthDate($dto->getBirthDate());
         }
         
-        if ($dto->getTimezone() !== null) {
-            $user->setTimezone($dto->getTimezone());
-        }
     }
 
     private function createUserFromDto(User $user, CreateUserDto $dto): void
     {
+        $user->setName($dto->getName());
         $user->setUsername($dto->getUsername());
         $user->setEmail($dto->getEmail());
         $user->setBio($dto->getBio());
+        $user->setThemes($dto->getThemes());
         $user->setAvatarUrl($dto->getAvatarUrl());
         $user->setBannerUrl($dto->getBannerUrl());
-        $user->setLocation($dto->getLocation());
-        $user->setWebsite($dto->getWebsite());
         $user->setBirthDate($dto->getBirthDate());
-        $user->setTimezone($dto->getTimezone());
     }
 
     private function formatValidationErrors($errors): array

@@ -29,7 +29,7 @@
       "@/types/*": ["./src/types/*"],
       "@/utils/*": ["./src/utils/*"],
       "@/assets/*": ["./public/*"],
-      "@/API/*": ["./src/API/*"]
+      "@/API/*": ["src/services/API/*"]
     }
   },
   "include": [

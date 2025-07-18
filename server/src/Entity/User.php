@@ -86,27 +86,21 @@ class User implements PasswordAuthenticatedUserInterface
     private $following_nb = 0;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, cascade: ['persist', 'remove'])]
-    #[Groups(['user:read'])]
     private Collection $posts;
 
     #[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class)]
-    #[Groups(['user:read'])]
     private Collection $following;
 
     #[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class)]
-    #[Groups(['user:read'])]
     private Collection $followers;
 
     #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserLikePost::class)]
-    #[Groups(['user:read'])]
     private Collection $likes;
 
     #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserRepost::class)]
-    #[Groups(['user:read'])]
     private Collection $reposts;
 
     #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserSavePost::class)]
-    #[Groups(['user:read'])]
     private Collection $savedPosts;
 
 

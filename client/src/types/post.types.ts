@@ -1,13 +1,22 @@
+import { User } from "@/types/user.types"; // à adapter à votre type User
+
 export type Post = {
-  id: string;
-  parent_id: string | null;
-  user_id: string;
-  text_content: string;
-  image: string | null;
-  image_alt: string | null;
-  posted_at: string;
-  likes_nb: number;
-  comments_nb: number;
-  repost_nb: number;
-  save_nb: number;
+  id: number;
+  user: User; // à définir selon votre modèle User
+  content: string;
+  type: "original" | "retweet" | "reply";
+  parentPost: Post | null;
+  language: string;
+  likesCount: number;
+  retweetsCount: number;
+  savedCount: number;
+  viewsCount: number;
+  impressionsCount: number;
+  clicksCount: number;
+  engagementScore: number;
+  isPinned: boolean;
+  status: "active" | "hidden" | "deleted";
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 };

@@ -1,67 +1,52 @@
 "use client"
 
-import { Form, FormField, FormLabel, FormControl, FormMessage, FormDescription, FormItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { z } from "zod"
+import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { redirect } from 'next/navigation'
+import { registerUser, loginUser } from "@/services/API/user.api"
+import { toast } from "sonner"
+import { Toaster } from "@/components/ui/sonner"
+import { FinalSchema } from "./validationSchemas"
+import Step1 from "@/components/page_parts/registerSteps/step1"
+import Step2 from "@/components/page_parts/registerSteps/step2"
+import Step3 from "@/components/page_parts/registerSteps/step3"
+import Step4 from "@/components/page_parts/registerSteps/step4"
 
-
-const Step1Schema = z.object({
-  name: z.string().min(2, { message: "Nom trop court (Min 2 caractères)" }),
-  email: z.string().email({ message: "Email invalide" }),
-  birthdate: z.string()
-})
-
-const Step2Schema = z.object({
-  password: z.string().min(6, { message: "Min 6 caractères" }),
-  confirmPassword: z.string().min(6, { message: "Min 6 caractères" }),
-  terms: z.boolean().refine((val) => val, {
-    message: "Vous devez accepter les conditions d'utilisation",
-  }),
-})
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Les mots de passe ne correspondent pas",
-    path: ["confirmPassword"],
-  })
-
-
-const Step3Schema = z.object({
-  themes: z.array(z.string()).min(5, { message: "Sélectionnez au moins 5 thèmes" }),
-})
-
-const Step4Schema = z.object({
-  profilePicture: z.instanceof(File).refine(file => file.size <= 2 * 1024 * 1024, {
-    message: "La taille du fichier doit être inférieure à 2 Mo",
-  }),
-  bio: z.string().max(500, { message: "Bio trop longue" }),
-})
-
-// Schéma global final (fusion des étapes)
-const FinalSchema = z.object({
-  ...Step1Schema.shape,
-  ...Step2Schema.shape,
-  ...Step3Schema.shape,
-  ...Step4Schema.shape,
-})
 
 function RegisterForm() {
-  const form = useForm<z.infer<typeof FinalSchema>>({
+  const form = useForm<{
+    id?: number;
+    name: string;
+    username?: string;
+    email: string | null;
+    password?: string | null;
+    bio?: string | null;
+    avatarUrl?: string | null;
+    bannerUrl?: string | null;
+    birthDate?: string | null;
+    themes?: string[];
+    confirmPassword?: string;
+    terms?: boolean;
+    profilePicture?: File;
+  }>({
     resolver: zodResolver(FinalSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
       confirmPassword: "",
-      birthdate: "",
+      birthDate: "",
       terms: false,
       themes: [],
       profilePicture: undefined,
       bio: "",
+      avatarUrl: undefined,
+      bannerUrl: undefined,
+      username: "",
     },
   })
 
@@ -69,7 +54,26 @@ function RegisterForm() {
     event.preventDefault();
     const formData = form.getValues();
     console.log(formData);
-    redirect("/dashboard");
+
+    const response = await registerUser(formData);
+    if (response) {
+      console.log("Inscription réussie", response);
+
+      // La route qui fournit le token est celui de la connexion
+      const loginResponse = await loginUser({
+        email: formData.email || "",
+        password: formData.password || "",
+      });
+      if (loginResponse) {
+        console.log("Connexion réussie", loginResponse);
+        localStorage.setItem("token", loginResponse.token);
+      }
+      redirect("/dashboard");
+    } else {
+      console.error("Erreur lors de l'inscription");
+      toast.error("Erreur lors de l'inscription. Veuillez réessayer.");
+    }
+
   }
 
   const [step, setStep] = useState(1)
@@ -77,7 +81,7 @@ function RegisterForm() {
   async function nextStep() {
     let valid;
     if (step === 1) {
-      valid = await form.trigger(["name", "email", "birthdate"])
+      valid = await form.trigger(["name", "email", "birthDate"])
     }
     else if (step === 2) {
       valid = await form.trigger(["password", "confirmPassword", "terms"])
@@ -101,213 +105,14 @@ function RegisterForm() {
   }
 
 
-  const themeOptions = [
-    "Jeux vidéo",
-    "Musique",
-    "Art",
-    "Sport",
-    "Technologie",
-    "Cinéma",
-    "Voyage",
-    "Cuisine",
-  ]
-
-
   return (
     <Form {...form}>
       <form onSubmit={onSubmit} action="#" className="flex flex-col gap-4">
-
-        {/* Première étape */}
-        {step === 1 && (
-          <div className="flex flex-col gap-2 ">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nom</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="birthdate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date de naissance</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      max={new Date(
-                        new Date().setFullYear(new Date().getFullYear() - 13)
-                      )
-                        .toISOString()
-                        .split("T")[0]}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Votre date de naissance nous aide à personnaliser votre expérience.
-                    Il ne sera pas affiché publiquement.
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-
-          </div>
-        )}
-
-        {/* Deuxième étape */}
-        {step === 2 && (
-          <div className="flex flex-col gap-2">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mot de passe</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirmer le mot de passe</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* <FormField
-              control={form.control}
-              name="terms"
-              render={({ field }) => (
-                <FormItem className="flex items-center gap-2 flex-wrap">
-                  <FormLabel className="mb-0">Accepter les conditions d'utilisation</FormLabel>
-                  <FormControl>
-                    <Input type="checkbox" {...field} className="ml-2" />
-                  </FormControl>
-                  <FormDescription className="w-full">
-                    En vous inscrivant, vous acceptez nos <a href="/terms" className="text-primary">conditions d'utilisation</a>.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-          </div>
-        )}
-
-        {/* Troisième étape */}
-        {step === 3 && (
-          <div className="flex flex-col gap-2">
-            <FormField
-              control={form.control}
-              name="themes"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Thèmes préférés</FormLabel>
-                  <div className="grid grid-cols-2 gap-2">
-                    {themeOptions.map((theme) => (
-                      <FormField
-                        key={theme}
-                        control={form.control}
-                        name="themes"
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={theme}
-                              className="flex items-center space-x-2"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(theme)}
-                                  onCheckedChange={(checked) => {
-                                    const newValue = checked
-                                      ? [...field.value, theme]
-                                      : field.value.filter((item) => item !== theme)
-                                    field.onChange(newValue)
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">{theme}</FormLabel>
-                            </FormItem>
-                          )
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <FormDescription>
-                    Choisissez au moins 5 centres d’intérêt.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
-
-        {/* Quatrième étape */}
-        {step === 4 && (
-          <div className="flex flex-col gap-2">
-            <FormField
-              control={form.control}
-              name="profilePicture"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Photo de profil</FormLabel>
-                  <FormControl>
-                    <Input type="file" accept="image/*" onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        field.onChange(e.target.files[0])
-                      }
-                    }} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Input type="textfield" {...field} />
-                  </FormControl>
-                  <FormDescription>Max 500 caractères</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
+        <Toaster richColors position="top-center" closeButton={false} />
+        {step === 1 && <Step1 form={form} />}
+        {step === 2 && <Step2 form={form} />}
+        {step === 3 && <Step3 form={form} />}
+        {step === 4 && <Step4 form={form} />}
 
         <div className="flex flex-col gap-3 mt-4">
           {step > 1 && <Button type="button" variant={"secondaryNoShadow"} onClick={prevStep}>‹ Précédent</Button>}

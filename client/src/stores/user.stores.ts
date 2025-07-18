@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { User } from "@/types/user.types";
-import { loginUser, registerUser } from "@/API/user.api";
+import { loginUser, registerUser } from "@/services/API/user.api";
 
 type UserState = {
   user: User | null;
