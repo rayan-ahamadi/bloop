@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Crée une instance personnalisée d'Axios
 const api = axios.create({
-  baseURL: "http://localhost:8000/api", // adapte l’URL à ton API Symfony
+  baseURL: "/api/",
 });
 
 // Intercepteur pour ajouter le token JWT à chaque requête

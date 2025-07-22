@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Service;
+
 class FollowManager
 {
     public function follow(User $follower, User $followed): void

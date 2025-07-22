@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*", // tous les appels faits à /api/*
-        destination: "http://localhost:5000/:path*", // sont redirigés vers l'API backend
+        destination: "https://localhost:8000/api/:path*", // sont redirigés vers l'API backend
       },
     ];
   },

@@ -13,10 +13,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
+
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\HasLifecycleCallbacks]
-class User implements PasswordAuthenticatedUserInterface
+class User implements PasswordAuthenticatedUserInterface, UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -104,10 +105,10 @@ class User implements PasswordAuthenticatedUserInterface
     private Collection $savedPosts;
 
 
-    // #[Assert\Choice(callback: [UserStatus::class, 'getValidStatuses'])]
-    // #[ORM\Column(type: Types::STRING, length: 20)]
-    // #[Groups(['user:read'])]
-    // private string $status = UserStatus::ACTIVE;
+    #[Assert\Choice(callback: [UserStatus::class, 'getValidStatuses'])]
+    #[ORM\Column(type: Types::STRING, length: 20)]
+    #[Groups(['user:read'])]
+    private string $status = UserStatus::ACTIVE;
 
     // #[ORM\Column(type: 'boolean', options: ['default' => false])]
     // #[Groups(['user:read'])]
@@ -364,6 +365,17 @@ class User implements PasswordAuthenticatedUserInterface
         return $this->savedPosts;
     }
 
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
 
     /**
      * @return Collection<int, Post>
@@ -406,5 +418,20 @@ class User implements PasswordAuthenticatedUserInterface
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email; // ou username, selon ton auth
+    }
+
+    public function eraseCredentials(): void
+    {
+        // vide ou logique pour effacer des infos sensibles
     }
 }

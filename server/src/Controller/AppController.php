@@ -8,10 +8,10 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class AppController extends AbstractController
 {
-    // src/Controller/AppController.php
-    #[Route('/{reactRouting}', name: 'app', requirements: ['reactRouting' => '^(?!api).+'], defaults: ['reactRouting' => null])]
-    public function index(): Response
-    {
-        return $this->file($this->getParameter('kernel.project_dir').'/public/next/index.html');
-    }
+    // // src/Controller/AppController.php
+    // #[Route('/{reactRouting}', name: 'app', requirements: ['reactRouting' => '^(?!api).+'], defaults: ['reactRouting' => null])]
+    // public function index(): Response
+    // {
+    //     return $this->file($this->getParameter('kernel.project_dir').'/public/next/index.html');
+    // }
 }

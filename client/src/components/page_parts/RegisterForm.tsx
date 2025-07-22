@@ -19,34 +19,29 @@ import Step4 from "@/components/page_parts/registerSteps/step4"
 
 function RegisterForm() {
   const form = useForm<{
-    id?: number;
     name: string;
-    username?: string;
-    email: string | null;
-    password?: string | null;
-    bio?: string | null;
-    avatarUrl?: string | null;
-    bannerUrl?: string | null;
-    birthDate?: string;
-    themes?: string[];
-    confirmPassword?: string;
-    terms?: boolean;
-    profilePicture?: File;
+    username: string;
+    email: string;
+    password: string;
+    bio: string;
+    avatar: File;
+    birthDate: string;
+    themes: string[];
+    confirmPassword: string;
+    terms: boolean;
   }>({
     resolver: zodResolver(FinalSchema),
     defaultValues: {
       name: "",
+      username: "",
       email: "",
       password: "",
-      confirmPassword: "",
-      birthDate: "",
-      terms: false,
-      themes: [],
-      profilePicture: undefined,
       bio: "",
-      avatarUrl: undefined,
-      bannerUrl: undefined,
-      username: "",
+      avatar: undefined as unknown as File,
+      birthDate: "",
+      themes: [],
+      confirmPassword: "",
+      terms: false,
     },
   })
 
@@ -56,21 +51,21 @@ function RegisterForm() {
     console.log(formData);
 
     const response = await registerUser(formData);
-    if (response) {
+    if (response && !response.error) {
       console.log("Inscription réussie", response);
 
       // La route qui fournit le token est celui de la connexion
       const loginResponse = await loginUser({
-        email: formData.email || "",
+        username: formData.username || "",
         password: formData.password || "",
       });
-      if (loginResponse) {
+      if (loginResponse && !loginResponse.error) {
         console.log("Connexion réussie", loginResponse);
         localStorage.setItem("token", loginResponse.token);
       }
       redirect("/dashboard");
     } else {
-      console.error("Erreur lors de l'inscription");
+      console.error("Erreur lors de l'inscription", response?.error || response);
       toast.error("Erreur lors de l'inscription. Veuillez réessayer.");
     }
 
@@ -91,7 +86,7 @@ function RegisterForm() {
       valid = await form.trigger(["themes"])
     }
     else if (step === 4) {
-      valid = await form.trigger(["profilePicture", "bio"])
+      valid = await form.trigger(["avatar", "bio"])
     }
     if (valid) {
       setStep((prev) => prev + 1)

@@ -21,6 +21,9 @@ use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Validation\User\UpdateUserDto;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+
 
 #[Route('/api/users')]
 class UserController extends AbstractController
@@ -49,8 +52,8 @@ class UserController extends AbstractController
             /** @var UploadedFile|null $avatarFile */
             $avatarFile = $request->files->get('avatar');
     
-            /** @var UploadedFile|null $bannerFile */
-            $bannerFile = $request->files->get('banner');
+            // /** @var UploadedFile|null $bannerFile */
+            // $bannerFile = $request->files->get('banner');
     
             // Créer utilisateur
             $user = new User();
@@ -62,18 +65,18 @@ class UserController extends AbstractController
             $user->setPassword($hashedPassword);
     
             // Avatar
-            if ($avatarFile) {
+            if ($avatarFile instanceof UploadedFile) {
                 $avatarFilename = uniqid('avatar_') . '.' . $avatarFile->guessExtension();
                 $avatarFile->move($this->getParameter('avatar_directory'), $avatarFilename);
                 $user->setAvatarUrl('/uploads/avatars/' . $avatarFilename);
             }
     
-            // Bannière
-            if ($bannerFile) {
-                $bannerFilename = uniqid('banner_') . '.' . $bannerFile->guessExtension();
-                $bannerFile->move($this->getParameter('banner_directory'), $bannerFilename);
-                $user->setBannerUrl('/uploads/banners/' . $bannerFilename);
-            }
+            // // Bannière
+            // if ($bannerFile) {
+            //     $bannerFilename = uniqid('banner_') . '.' . $bannerFile->guessExtension();
+            //     $bannerFile->move($this->getParameter('banner_directory'), $bannerFilename);
+            //     $user->setBannerUrl('/uploads/banners/' . $bannerFilename);
+            // }
     
             // Persistance en base de données
             $this->userRepository->save($user, true);
@@ -128,7 +131,10 @@ class UserController extends AbstractController
                 'trace' => $e->getTraceAsString()
             ]);
             return $this->json(
-                ['error' => 'Une erreur est survenue lors de la création de l\'utilisateur'],
+                [
+                    'error' => 'Une erreur est survenue lors de la création de l\'utilisateur',
+                    'details' => $e->getMessage()
+                ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -255,7 +261,20 @@ class UserController extends AbstractController
             );
         }
 
+        // Supprimer les fichiers avatar et bannière s'ils existent
+        $avatarPath = $user->getAvatarUrl() ? $this->getParameter('avatar_directory') . '/' . basename($user->getAvatarUrl()) : null;
+        $bannerPath = $user->getBannerUrl() ? $this->getParameter('banner_directory') . '/' . basename($user->getBannerUrl()) : null;
+
+        if ($avatarPath && file_exists($avatarPath)) {
+            @unlink($avatarPath);
+        }
+        if ($bannerPath && file_exists($bannerPath)) {
+            @unlink($bannerPath);
+        }
+
         $user->setDeletedAt(new \DateTime());
+        $user->setAvatarUrl(null);
+        $user->setBannerUrl(null);
         $this->entityManager->flush();
 
         return $this->json(null, Response::HTTP_NO_CONTENT);

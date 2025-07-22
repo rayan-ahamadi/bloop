@@ -13,7 +13,7 @@ import { Toaster } from "@/components/ui/sonner"
 
 
 const schema = z.object({
-  email: z.string().min(1, { message: "Ce compte n'existe pas" }),
+  username: z.string().min(1, { message: "Ce compte n'existe pas" }),
   password: z.string().min(8, { message: "Le mot de passe doit contenir au moins 8 caractères" }),
 })
 
@@ -24,7 +24,7 @@ function LoginForm() {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   })
@@ -33,7 +33,7 @@ function LoginForm() {
     event.preventDefault();
     const formData = form.getValues();
     const response = await loginUser({
-      email: formData.email,
+      username: formData.username,
       password: formData.password,
     });
 
@@ -59,12 +59,12 @@ function LoginForm() {
         <div className="flex flex-col gap-2 ">
           <FormField
             control={form.control}
-            name="email"
+            name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Nom d&apos;utilisateur</FormLabel>
                 <FormControl>
-                  <Input type="email" {...field} />
+                  <Input  {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

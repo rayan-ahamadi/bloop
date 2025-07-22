@@ -5,7 +5,7 @@ import { UseFormReturn } from "react-hook-form"
 import Image from "next/image"
 
 interface Props {
-    form: UseFormReturn<any>
+    form: UseFormReturn
 }
 
 export default function Step4({ form }: Props) {
@@ -13,7 +13,7 @@ export default function Step4({ form }: Props) {
         <div className="flex flex-col gap-2">
             <FormField
                 control={form.control}
-                name="profilePicture"
+                name="avatar"
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Photo de profil</FormLabel>

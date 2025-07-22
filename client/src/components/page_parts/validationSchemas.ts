@@ -20,7 +20,7 @@ export const Step1Schema = z.object({
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
-        return age >= 13;
+        return age >= 15;
       },
       {
         message: "Vous devez avoir au moins 13 ans",
@@ -46,11 +46,9 @@ export const Step3Schema = z.object({
 });
 
 export const Step4Schema = z.object({
-  profilePicture: z
-    .instanceof(File)
-    .refine((file) => file.size <= 2 * 1024 * 1024, {
-      message: "Max 2 Mo",
-    }),
+  avatar: z.instanceof(File).refine((file) => file.size <= 2 * 1024 * 1024, {
+    message: "Max 2 Mo",
+  }),
   bio: z.string().max(500),
 });
 

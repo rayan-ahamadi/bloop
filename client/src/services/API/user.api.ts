@@ -4,25 +4,27 @@ import { User } from "@/types/user.types"; // à adapter à ton type
 // Register (POST)
 export const registerUser = async (userData: Partial<User>) => {
   const data = new FormData();
+
   Object.entries(userData).forEach(([key, value]) => {
-    if (value !== undefined) {
-      data.append(key, value);
+    if (value === undefined || value === null) return;
+
+    if (Array.isArray(value)) {
+      value.forEach((v) => data.append(`${key}[]`, v));
+    } else {
+      data.append(key, value instanceof File ? value : String(value));
     }
   });
-  const response = await axios.post("/users/register", data, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+
+  const response = await axios.post("/users/register/", data); // ✅ ne pas mettre headers
   return response.data;
 };
 
 // Login (POST à /login_check, JWT Auth)
 export const loginUser = async (credentials: {
-  email: string;
+  username: string;
   password: string;
 }) => {
-  const response = await axios.post("/users/login_check", credentials);
+  const response = await axios.post("/login_check/", credentials);
   return response.data; // { token: string }
 };
 
@@ -34,7 +36,7 @@ export const fetchUsers = async (): Promise<User[]> => {
 
 // Lire un utilisateur (GET /{id})
 export const fetchUserById = async (id: number) => {
-  const response = await axios.get(`/users/${id}`);
+  const response = await axios.get(`/users/${id}/`);
   return response.data;
 };
 
@@ -46,7 +48,7 @@ export const updateUser = async (id: number, updatedData: Partial<User>) => {
       data.append(key, value);
     }
   });
-  const response = await axios.post(`/users/${id}`, data, {
+  const response = await axios.post(`/users/${id}/`, data, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -56,12 +58,12 @@ export const updateUser = async (id: number, updatedData: Partial<User>) => {
 
 // Supprimer un utilisateur (DELETE /{id})
 export const deleteUser = async (id: number) => {
-  const response = await axios.delete(`/users/${id}`);
+  const response = await axios.delete(`/users/${id}/`);
   return response.data;
 };
 
 // Suivre un utilisateur (POST /{id}/follow)
 export const followUser = async (id: number) => {
-  const response = await axios.post(`/users/${id}/follow`);
+  const response = await axios.post(`/users/${id}/follow/`);
   return response.data;
 };
