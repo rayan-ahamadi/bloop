@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { User } from "@/types/user.types";
-import { loginUser, registerUser } from "@/services/API/user.api";
+import {
+  loginUser,
+  getProfile,
+  fetchUserById as fetchUserApi,
+} from "@/services/API/user.api";
+import { persist } from "zustand/middleware";
 
 type UserState = {
   user: User | null;
@@ -8,63 +13,106 @@ type UserState = {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (userData: User) => Promise<void>;
-  fetchUser: (userId: string) => Promise<void>;
+  getProfile: () => Promise<void>;
+  // register: (userData: User) => Promise<void>;
+  fetchUser: (userId: number) => Promise<void>;
   //   updateProfile: (userData: Partial<User>) => Promise<void>;
 };
 
-export const useUserStore = create<UserState>((set) => ({
-  user: null,
-  loading: false,
-  error: null,
+export const useUserStore = create<UserState>()(
+  persist(
+    (set) => ({
+      user: null,
+      loading: false,
+      error: null,
 
-  login: async () => {
-    set({ loading: true, error: null });
-    try {
-      const user = await loginUser(email, password);
-      set({ user, loading: false });
-    } catch (error) {
-      set({ error: error.message, loading: false });
+      login: async (username: string, password: string) => {
+        set({ loading: true, error: null });
+        try {
+          const token = await loginUser({ username, password });
+          localStorage.setItem("token", token.token); // Stocke le token JWT
+          const profile = await getProfile();
+          set({ user: profile, loading: false });
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : String(error),
+            loading: false,
+          });
+        }
+      },
+
+      logout: async () => {
+        set({ loading: true, error: null });
+        try {
+          localStorage.removeItem("token");
+          set({ user: null, loading: false });
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : String(error),
+            loading: false,
+          });
+        }
+      },
+
+      getProfile: async () => {
+        set({ loading: true, error: null });
+        try {
+          const profile = await getProfile();
+          set({ user: profile, loading: false });
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : String(error),
+            loading: false,
+          });
+        }
+      },
+
+      // register: async (userData: User) => {
+      //   set({ loading: true, error: null });
+      //   try {
+      //     const newUser = await registerUser(userData);
+      //     set({ user: newUser, loading: false });
+      //   } catch (error) {
+      //     set({
+      //       error: error instanceof Error ? error.message : String(error),
+      //       loading: false,
+      //     });
+      //   }
+      // },
+
+      fetchUser: async (userId: number) => {
+        set({ loading: true, error: null });
+        try {
+          const user = await fetchUserApi(userId);
+          set({ user, loading: false });
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : String(error),
+            loading: false,
+          });
+        }
+      },
+
+      // updateProfile: async (userData: Partial<User>) => {
+      //     set({ loading: true, error: null });
+      //     try {
+      //         const updatedUser = await fetchUserApi(userData);
+      //         set({ user: updatedUser, loading: false });
+      //     } catch (error) {
+      //         set({ error: error instanceof Error ? error.message : String(error), loading: false });
+      //     }
+      // },
+    }),
+    {
+      name: "user-storage", // Nom de la clé dans localStorage
+      storage: {
+        getItem: (name) => {
+          const item = localStorage.getItem(name);
+          return item ? JSON.parse(item) : null;
+        },
+        setItem: (name, value) => localStorage.setItem(name, value),
+        removeItem: (name) => localStorage.removeItem(name),
+      },
     }
-  },
-
-  logout: async () => {
-    set({ loading: true, error: null });
-    try {
-      await logoutUser();
-      set({ user: null, loading: false });
-    } catch (error) {
-      set({ error: error.message, loading: false });
-    }
-  },
-
-  register: async (userData) => {
-    set({ loading: true, error: null });
-    try {
-      const newUser = await registerUser(userData);
-      set({ user: newUser, loading: false });
-    } catch (error) {
-      set({ error: error.message, loading: false });
-    }
-  },
-
-  fetchUser: async (userId) => {
-    set({ loading: true, error: null });
-    try {
-      const user = await fetchUser(userId);
-      set({ focusedUser: user, loading: false });
-    } catch (error) {
-      set({ error: error.message, loading: false });
-    }
-  },
-
-  // updateProfile: async (userData) => {
-  //     set({ loading: true, error: null });
-  //     try {
-  //         const updatedUser = await fetchUser(userData);
-  //         set({ user: updatedUser, loading: false });
-  //     } catch (error) {
-  //         set({ error: error.message, loading: false });
-  //     }
-  // },
-}));
+  )
+);

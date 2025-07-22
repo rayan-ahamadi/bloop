@@ -170,6 +170,23 @@ class UserController extends AbstractController
         );
     }
 
+    #[Route('/me', name: 'user_me', methods: ['GET'])]
+    public function me(): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        return $this->json(
+            $user,
+            Response::HTTP_OK,
+            [],
+            ['groups' => ['user:read']]
+        );
+    }
+
+
     #[Route('/{id}', name: 'user_read', methods: ['GET'])]
     public function read(int $id): JsonResponse
     {
@@ -202,6 +219,7 @@ class UserController extends AbstractController
         );
     }
 
+    
     #[Route('/{id}', name: 'user_update', methods: ['POST'])]
     public function update(int $id, Request $request): JsonResponse
     {

@@ -6,10 +6,11 @@ import ImageIcon from "@/components/icons/image-icon.svg";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
+import { useUserStore } from "@/stores/user.stores";
 
 
 export default function BloopPost() {
-
+    const { user } = useUserStore();
     const handlePost = () => {
         // Logic to handle posting the bloop
         toast.success("Bloop posté avec succès!");
@@ -20,7 +21,7 @@ export default function BloopPost() {
             <Toaster richColors position="top-center" closeButton={false} />
             <div className="inputs flex flex-row items-start gap-2 p-4">
                 <Image
-                    src={"/images/icons/user.png"}
+                    src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatar/user.png")}
                     alt={"Avatar"}
                     width={45}
                     height={45}

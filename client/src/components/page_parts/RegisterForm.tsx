@@ -6,8 +6,8 @@ import { Form } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
-import { redirect } from 'next/navigation'
-import { registerUser, loginUser } from "@/services/API/user.api"
+import { useRouter } from 'next/navigation'
+import { registerUser } from "@/services/API/user.api"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 import { FinalSchema } from "./validationSchemas"
@@ -15,9 +15,13 @@ import Step1 from "@/components/page_parts/registerSteps/step1"
 import Step2 from "@/components/page_parts/registerSteps/step2"
 import Step3 from "@/components/page_parts/registerSteps/step3"
 import Step4 from "@/components/page_parts/registerSteps/step4"
+import { useUserStore } from "@/stores/user.stores"
+
 
 
 function RegisterForm() {
+  const { login } = useUserStore()
+  const router = useRouter()
   const form = useForm<{
     name: string;
     username: string;
@@ -48,24 +52,16 @@ function RegisterForm() {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = form.getValues();
-    console.log(formData);
 
-    const response = await registerUser(formData);
-    if (response && !response.error) {
-      console.log("Inscription réussie", response);
-
-      // La route qui fournit le token est celui de la connexion
-      const loginResponse = await loginUser({
-        username: formData.username || "",
-        password: formData.password || "",
-      });
-      if (loginResponse && !loginResponse.error) {
-        console.log("Connexion réussie", loginResponse);
-        localStorage.setItem("token", loginResponse.token);
+    try {
+      const response = await registerUser(formData);
+      if (response && !response.error) {
+        console.log("Inscription réussie", response);
+        await login(formData.username, formData.password); // Utilisation de la fonction login du store
+        router.push("/dashboard");
       }
-      redirect("/dashboard");
-    } else {
-      console.error("Erreur lors de l'inscription", response?.error || response);
+    } catch (error) {
+      console.error("Erreur lors de l'inscription", error);
       toast.error("Erreur lors de l'inscription. Veuillez réessayer.");
     }
 

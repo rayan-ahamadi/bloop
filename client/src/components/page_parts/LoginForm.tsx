@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { redirect } from 'next/navigation'
-import { loginUser } from "@/services/API/user.api"
+import { useRouter } from 'next/navigation'
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
+import { useUserStore } from "@/stores/user.stores"
 
 
 
@@ -21,6 +21,9 @@ const schema = z.object({
 
 
 function LoginForm() {
+  const { login, error, loading } = useUserStore()
+  const router = useRouter()
+
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -31,21 +34,17 @@ function LoginForm() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     const formData = form.getValues();
-    const response = await loginUser({
-      username: formData.username,
-      password: formData.password,
-    });
 
-    if (response) {
-      console.log("Connexion réussie", response);
-      localStorage.setItem("token", response.token);
-      redirect("/dashboard");
-    } else {
-      console.error("Erreur lors de la connexion");
-      toast.error("Erreur lors de la connexion. Veuillez vérifier vos identifiants.");
+    try {
+      await login(formData.username, formData.password); // Utilisation de la fonction login du store
+      router.push("/dashboard");
+    } catch (error) {
+      toast.error("Identifiants incorrects ou réponse invalide.");
+      console.error(error);
+      return;
     }
-
   }
 
 

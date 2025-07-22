@@ -19,6 +19,12 @@ export const registerUser = async (userData: Partial<User>) => {
   return response.data;
 };
 
+// Get profile (GET /me, JWT Auth)
+export const getProfile = async () => {
+  const response = await axios.get("/users/me");
+  return response.data;
+};
+
 // Login (POST à /login_check, JWT Auth)
 export const loginUser = async (credentials: {
   username: string;

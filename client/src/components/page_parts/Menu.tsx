@@ -3,9 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { forwardRef } from "react";
+import { useUserStore } from "@/stores/user.stores";
+import { useEffect } from "react";
 
 const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: React.MouseEvent<HTMLDivElement>) => void, menuOpen?: boolean }>((props, ref) => {
-
+    const { user, getProfile } = useUserStore();
     const links = [
         { href: "/dashboard", label: "Accueil", icon: "/images/icons/home.svg", active: true },
         { href: "/dashboard/explore", label: "Explorer", icon: "/images/icons/search.svg", active: false },
@@ -16,12 +18,20 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
     ]
 
     const userData = {
-        name: "Rayan",
-        username: "@RayouLeBoss",
-        subscriptions: 26,
-        followers: 31,
+        name: "User Name (error)",
+        username: "@User (error)",
+        subscriptions: 0,
+        followers: 0,
     }
 
+    useEffect(() => {
+        console.log("User data:", user);
+        if (!user) {
+            getProfile();
+        }
+    }, [user, getProfile]);
+
+    console.log("User data:", user);
     return (
         <div ref={ref} className={"absolute md:static bg-secondary-dark/25 md:bg-secondary flex flex-col items-left border-secondary-dark md:border-r-4 w-screen h-full  md:w-1/5  z-20 top-0 " + props.className} onClick={(e) => props.displayMenu && props.displayMenu(e)}> {/*Overlay*/}
             <div className={`mobile bg-secondary md:hidden flex flex-col items-left w-[75vw] p-7 transition-all duration-1000 h-full ease top-0 ${props.menuOpen ? "translate-x-[0%]" : "translate-x-[-100%]"
@@ -29,7 +39,7 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                 <div className="profile">
                     <div className="profile-card bg-secondary flex flex-col items-left rounded-md shadow-[4px_4px_0_0_black] p-4">
                         <Image
-                            src="/images/icons/user.png"
+                            src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatar/user.png")}
                             alt="User Avatar"
                             width={32}
                             height={32}
@@ -37,22 +47,22 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                         />
                         <p>
                             <b>
-                                {userData.name}
+                                {user?.name || userData.name}
                             </b>
                         </p>
                         <p>
-                            {userData.username}
+                            @{user?.username}
                         </p>
 
                         <div className="flex flex-row justify-between w-full">
                             <p>
                                 <b>
-                                    {userData.subscriptions}
+                                    {user?.following_nb}
                                 </b> Abonnements
                             </p>
                             <p>
                                 <b>
-                                    {userData.followers}
+                                    {user?.followers_nb}
                                 </b> Abonnés
                             </p>
                         </div>
@@ -104,7 +114,7 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                     </div>
                     <div className="bg-secondary profile-card flex flex-row item-center gap-2 border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] p-4 mt-8">
                         <Image
-                            src="/images/icons/user.png"
+                            src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatar/user.png")}
                             alt="User Avatar"
                             width={45}
                             height={45}
@@ -113,11 +123,11 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                         <div className="flex flex-col">
                             <p>
                                 <b>
-                                    {userData.name}
+                                    {user?.name || userData.name}
                                 </b>
                             </p>
                             <p>
-                                {userData.username}
+                                @{user?.username}
                             </p>
                         </div>
                     </div>

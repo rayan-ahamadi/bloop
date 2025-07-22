@@ -31,6 +31,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/seed/**",
       },
+      {
+        protocol: "https",
+        hostname: "localhost",
+        port: "8000",
+        pathname: "/uploads/**",
+      },
     ],
   },
   webpack(config) {
