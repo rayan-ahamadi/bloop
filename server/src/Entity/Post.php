@@ -7,6 +7,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\Table(name: 'posts')]
@@ -102,6 +104,8 @@ class Post
     #[Groups(['post:read'])]
     private ?\DateTimeInterface $deletedAt = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(['post:read'])]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: UserLikePost::class)]
     private Collection $likes;
 
@@ -113,10 +117,13 @@ class Post
 
     public function __construct()
     {
+        $this->likes = new ArrayCollection();
+        $this->reposts = new ArrayCollection();
+        $this->savedPosts = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }
-
+       
     public function getId(): ?int
     {
         return $this->id;

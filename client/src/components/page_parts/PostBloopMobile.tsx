@@ -1,5 +1,3 @@
-"use client";
-
 import { useUserStore } from "@/stores/user.stores";
 import { usePostStore } from "@/stores/post.stores";
 
@@ -10,31 +8,23 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 
-import {
-    Form,
-    FormField,
-    FormLabel,
-    FormControl,
-    FormMessage,
-    FormItem,
-} from "@/components/ui/form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Form, FormField, FormLabel, FormControl, FormMessage, FormItem } from "@/components/ui/form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+
 
 const schema = z.object({
     content: z.string().min(1, { message: "Le contenu du bloop ne peut pas être vide" }),
-    image: z
-        .instanceof(File)
-        .optional()
-        .refine(file => !file || file.size <= 2 * 1024 * 1024, {
-            message: "L'image doit faire moins de 2 Mo",
-        }),
+    image: z.instanceof(File).optional().refine(file => !file || file.size <= 2 * 1024 * 1024, {
+        message: "L'image doit faire moins de 2 Mo",
+    }),
     type: z.literal("original"),
     language: z.string().optional(),
 });
 
-export default function BloopPost() {
+
+export default function BloopPostMobile() {
     const { user } = useUserStore();
     const { addPost, loading } = usePostStore();
     const form = useForm<z.infer<typeof schema>>({
@@ -46,39 +36,41 @@ export default function BloopPost() {
             language: "fr",
         },
     });
-
-    async function handlePost(data: z.infer<typeof schema>) {
+    async function handlePost() {
+        // Logic to handle posting the bloop
+        const formData = form.getValues();
         try {
+
             if (user) {
                 await addPost({
-                    content: data.content,
-                    image: data.image,
+                    content: formData.content,
+                    image: formData.image,
                     type: "original",
                     language: "fr",
-                });
+                })
                 toast.success("Bloop posté avec succès!");
                 form.reset();
             } else {
                 toast.error("Vous devez être connecté pour poster un bloop.");
             }
+
+
         } catch (error) {
-            toast.error("Erreur lors de la publication du bloop.");
+            toast.error("Erreur lors de la publication du bloop: ")
         }
-    }
+    };
+
 
     return (
-        <Form {...form}>
-            <div className="w-[95%] relative top-2 hidden md:block">
+        <Form {...form} >
+            <div className="w-[95%] relative top-2">
                 <Toaster richColors position="top-center" closeButton={false} />
                 <form
                     onSubmit={form.handleSubmit(handlePost)}
                     className="inputs flex flex-row items-start gap-2 p-4 border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black]"
                 >
                     <Image
-                        src={
-                            "https://localhost:8000" +
-                            (user?.avatarUrl || "/uploads/avatars/user.png")
-                        }
+                        src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatars/user.png")}
                         alt={"Avatar"}
                         width={45}
                         height={45}
@@ -121,18 +113,18 @@ export default function BloopPost() {
                                                     field.onChange(e.target.files?.[0]);
                                                 }}
                                             />
+
                                         </FormControl>
                                         <ImageIcon
                                             className="cursor-pointer hover:fill-accent/80"
-                                            onClick={() =>
-                                                document.getElementById("image-upload")?.click()
-                                            }
+                                            onClick={() => document.getElementById("image-upload")?.click()}
                                         />
+
                                         {field.value && typeof field.value === "object" && (
                                             <div className="mb-6 m-auto" style={{ position: "relative" }}>
                                                 <Image
                                                     src={URL.createObjectURL(field.value)}
-                                                    alt="Aperçu de l'image"
+                                                    alt="Aperçu de la photo de profil"
                                                     width={300}
                                                     height={300}
                                                     loading="lazy"
@@ -155,6 +147,9 @@ export default function BloopPost() {
                                     </FormItem>
                                 )}
                             />
+
+
+
                         </div>
                         <Button
                             type="submit"
@@ -167,5 +162,6 @@ export default function BloopPost() {
                 </form>
             </div>
         </Form>
+
     );
 }

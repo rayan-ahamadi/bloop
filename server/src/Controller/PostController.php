@@ -171,7 +171,7 @@ class PostController extends AbstractController
 
             // Gestion de l'image (si présente)
             if ($imageFile) {
-                $uploadsDir = $this->getParameter('uploads_directory'); // défini dans services.yaml
+                $uploadsDir = $this->getParameter('post_image_directory'); // défini dans services.yaml
                 $filename = uniqid() . '.' . $imageFile->guessExtension();
                 $imageFile->move($uploadsDir, $filename);
                 $post->setImageUrl('/uploads/' . $filename); // Chemin public relatif
@@ -201,7 +201,7 @@ class PostController extends AbstractController
                 'trace' => $e->getTraceAsString()
             ]);
             return $this->json(
-                ['error' => 'Une erreur est survenue lors de la création du post'],
+                ['error' => 'Une erreur est survenue lors de la création du post', 'details' => $e->getMessage()],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

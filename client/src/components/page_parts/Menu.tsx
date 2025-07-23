@@ -24,12 +24,11 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
         followers: 0,
     }
 
-    useEffect(() => {
-        console.log("User data:", user);
-        if (!user) {
-            getProfile();
-        }
-    }, [user, getProfile]);
+    // useEffect(() => {
+    //     if (!user) {
+    //         getProfile();
+    //     }
+    // }, [user, getProfile]);
 
     console.log("User data:", user);
     return (
