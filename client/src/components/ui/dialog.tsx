@@ -15,7 +15,7 @@ function Dialog({
 
 interface DialogTriggerProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Trigger> {
-  variant?: "default" | "defaultNoShadow" | "secondary" | "secondaryNoShadow" | "accent" | "ghost" | "link"
+  variant?: "default" | "defaultNoShadow" | "secondary" | "secondaryNoShadow" | "accent" | "ghost" | "link" | "text"
   size?: "default" | "sm" | "lg" | "icon"
   asChild?: boolean
 }
@@ -33,9 +33,13 @@ function DialogTrigger({
       data-slot="dialog-trigger"
       {...props}
     >
-      <button className={cn(buttonVariants({ variant, size }), className)} >
-        {props.children}
-      </button>
+      {variant !== "text" ?
+        <button className={cn(buttonVariants({ variant, size }), className)} >
+          {props.children}
+        </button>
+        :
+        <span>{props.children}</span>
+      }
     </DialogPrimitive.Trigger>
   )
 }

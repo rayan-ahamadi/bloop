@@ -71,7 +71,7 @@ export default function Home() {
 
         <div id="email" className="p-8 flex flex-col gap-1 flex-grow-1 md:px-20 ">
           <Dialog>
-            <DialogTrigger variant="default" className="md:mt-2 mb-5 text-[17px] flex flex-row justify-center items-center md:w-2/4 md:text-[20px]">
+            <DialogTrigger variant="default" className="md:mt-2 mb-5 text-[17px] flex flex-row justify-center items-center md:w-2/4 md:text-[20px]" >
               <Image
                 className="mr-2"
                 src="/images/icons/+.svg"
@@ -98,11 +98,14 @@ export default function Home() {
           <p className="text-[14px] w-2/4">En vous inscrivant, vous acceptez nos <Link href={"#"} className="text-primary">Conditions d’utilisation</Link> , notre <Link href={"#"} className="text-primary">Politique de confidentialité </Link>  et notre <Link href={"#"} className="text-primary">Utilisation des cookies</Link>.</p>
           <p className="text-[14px] flex-grow-1 mt-4">Vous avez déjà un compte ?
             <Dialog>
-              <DialogTrigger className="md:flex flex-row justify-center items-center md:mt-5 md:w-2/4 " variant="accent">
+              <DialogTrigger className="hidden md:flex flex-row justify-center items-center md:mt-5 md:w-2/4 " variant="accent">
                 <span className="text-primary cursor-pointer md:hidden">&nbsp; Connectez-vous</span>
                 <span className="hidden w-full h-full text-[20px] md:flex flex-row justify-center items-center">
                   Se connecter
                 </span>
+              </DialogTrigger>
+              <DialogTrigger variant="text">
+                <span className="text-primary cursor-pointer md:hidden">&nbsp; Connectez-vous</span>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>

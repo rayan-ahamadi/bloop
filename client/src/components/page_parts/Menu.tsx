@@ -33,13 +33,13 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
 
     console.log("User data:", user);
     return (
-        <div ref={ref} className={"absolute md:static bg-secondary-dark/25 md:bg-secondary flex flex-col items-left border-secondary-dark md:border-r-4 w-screen h-full  md:w-1/5  z-20 top-0 " + props.className} onClick={(e) => props.displayMenu && props.displayMenu(e)}> {/*Overlay*/}
-            <div className={`mobile bg-secondary md:hidden flex flex-col items-left w-[75vw] p-7 transition-all duration-1000 h-full ease top-0 ${props.menuOpen ? "translate-x-[0%]" : "translate-x-[-100%]"
+        <div ref={ref} className={"absolute md:static bg-secondary-dark/25 md:bg-secondary flex flex-col items-left border-secondary-dark md:border-r-4 w-screen h-screen md:w-1/5 md:z-20 top-0 " + props.className} onClick={(e) => props.displayMenu && props.displayMenu(e)}> {/*Overlay*/}
+            <div className={`mobile bg-secondary md:hidden flex flex-col items-left w-[75vw] p-7 transition-all duration-1000  h-full ease top-0 ${props.menuOpen ? "translate-x-[0%]" : "translate-x-[-100%]"
                 }`} > {/*menu*/}
                 <div className="profile">
-                    <div className="profile-card bg-secondary flex flex-col items-left rounded-md shadow-[4px_4px_0_0_black] p-4">
+                    <div className="profile-card bg-secondary flex flex-col items-left rounded-md shadow-[4px_4px_0_0_black] p-4 border-1 border-secondary-dark">
                         <Image
-                            src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatar/user.png")}
+                            src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatars/user.png")}
                             alt="User Avatar"
                             width={32}
                             height={32}
@@ -114,7 +114,7 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                     </div>
                     <div className="bg-secondary profile-card flex flex-row item-center gap-2 border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] p-4 mt-8">
                         <Image
-                            src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatar/user.png")}
+                            src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatars/user.png")}
                             alt="User Avatar"
                             width={45}
                             height={45}

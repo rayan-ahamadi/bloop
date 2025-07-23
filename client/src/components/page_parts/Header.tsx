@@ -25,7 +25,7 @@ export default function Header() {
 
 
     return (
-        <header className="bg-secondary-dark flex justify-between items-center p-4 z-10">
+        <header className="bg-secondary-dark flex justify-between items-center p-4 z-50 sticky top-0">
             <div id="burger-menu">
                 <Image
                     src="/images/icons/burger-menu.svg"

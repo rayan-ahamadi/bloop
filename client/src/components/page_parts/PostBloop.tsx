@@ -17,7 +17,7 @@ export default function BloopPost() {
     };
 
     return (
-        <div className="w-full bg-secondary border-b-4 border-secondary-dark">
+        <div className="w-full bg-secondary border-b-4 border-secondary-dark hidden md:block sticky md:top-17 z-10">
             <Toaster richColors position="top-center" closeButton={false} />
             <div className="inputs flex flex-row items-start gap-2 p-4">
                 <Image
@@ -34,7 +34,7 @@ export default function BloopPost() {
                         <div className="flex items-center gap-2">
                             <ImageIcon className="cursor-pointer hover:fill-accent/80" />
                         </div>
-                        <Button className="size-fit py-[6px] px-[20px] font-bold text-[16px]">
+                        <Button className="size-fit py-[6px] px-[20px] font-bold text-[16px]" onClick={handlePost}>
                             Poster
                         </Button>
                     </div>

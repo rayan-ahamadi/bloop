@@ -38,7 +38,7 @@ const FindFriends = forwardRef<HTMLDivElement, { className?: string }>(({ classN
     ];
 
     return (
-        <div className="flex flex-col justify-between items-center w-full md:h-[93vh] md:w-[30vw] bg-secondary border-secondary-dark md:border-l-4">
+        <div className={"flex flex-col justify-between items-center w-full md:h-[93vh] md:w-[30vw] bg-secondary border-secondary-dark md:border-l-4 " + className}  >
             <div className="find-friends flex flex-col items-center w-full h-fit p-6 border-secondary-dark border-b-2">
                 <div className="search-bar w-full mb-4">
                     <Input
@@ -63,7 +63,7 @@ const FindFriends = forwardRef<HTMLDivElement, { className?: string }>(({ classN
                                     <p className="font-semibold">{user.username}</p>
                                     <p className="text-secondary-dark/60">{user.handle}</p>
                                 </div>
-                                <Button variant={"accent"} className="ml-auto w-30 py-4 font-medium">
+                                <Button variant={"accent"} className="ml-auto w-2/6 py-4 font-medium">
                                     <span className="text-[16px]">Suivre</span>
                                 </Button>
                             </div>
