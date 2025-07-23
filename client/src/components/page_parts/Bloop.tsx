@@ -6,6 +6,7 @@ import ChatIcon from "@/components/icons/chat.svg";
 import HeartIcon from "@/components/icons/heart.svg";
 import PaperPlaneIcon from "@/components/icons/paperPlane.svg";
 import FloppyIcon from "@/components/icons/floppy.svg";
+import { User } from "@/types/user.types";
 
 
 // Bloop = l'équivalent d'un tweet sur Twitter.
@@ -15,17 +16,18 @@ import FloppyIcon from "@/components/icons/floppy.svg";
  * @param props - The props for the Bloop component.
  * @param props.bloopContent - The content to be displayed in the Bloop component.
  */
+
 interface BloopContent {
-    profilePicture?: string;
-    name?: string;
-    userName?: string;
-    bloopedAt?: string | Date;
+    user?: Partial<User>;
+    createdAt?: string | Date;
     content?: string;
-    image?: string;
-    repliesNb?: number;
-    likesNb?: number;
-    rebloopsNb?: number;
-    saved?: boolean;
+    imageUrl?: string;
+    replies?: number;
+    likesCount?: number;
+    retweetsCount?: number;
+    repliesCount?: number;
+    isPinned?: boolean;
+    profilePicture?: string;
 }
 
 interface BloopProps {
@@ -33,16 +35,18 @@ interface BloopProps {
 }
 
 export default function Bloop({ bloopContent }: BloopProps) {
-    const profilePicture = bloopContent?.profilePicture || "/images/icons/user.png";
-    const name = bloopContent?.name || "Anonymous";
-    const username = bloopContent?.userName || "@anonymous";
-    const bloopedAt = bloopContent?.bloopedAt || new Date().toLocaleString();
+    const user = bloopContent?.user || {};
+
+    const profilePicture = "https://localhost:8000" + (user.avatarUrl || "/uploads/avatars/user.png");
+    const name = user.name || "Error User";
+    const username = user.username || "@error_user";
+    const bloopedAt = bloopContent?.createdAt || new Date().toLocaleString();
     const content = bloopContent?.content || "No content available";
-    const image = bloopContent?.image || null;
-    const replies = bloopContent?.repliesNb || 0;
-    const likes = bloopContent?.likesNb || 0;
-    const rebloops = bloopContent?.rebloopsNb || 0;
-    const saved = bloopContent?.saved || false;
+    const image = "https://localhost:8000" + bloopContent?.imageUrl;
+    const likes = bloopContent?.likesCount || 0;
+    const rebloops = bloopContent?.retweetsCount || 0;
+    const saved = bloopContent?.isPinned || false;
+    const replies = bloopContent?.repliesCount || 0;
 
     // Calcule le le temps écoulé depuis la publication du bloop. 
     // TODO : mettre dans un fichier utils

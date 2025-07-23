@@ -23,7 +23,7 @@ class Post
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['post:read', 'post:list'])]
+    #[Groups(['post:read', 'post:list', 'user:read', 'user:list'])]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -50,6 +50,10 @@ class Post
     #[ORM\Column(length: 10, options: ['default' => 'fr'])]
     #[Groups(['post:read', 'post:create', 'post:update'])]
     private string $language = 'fr';
+    
+    #[ORM\Column(options: ['default' => 0])]
+    #[Groups(['post:read', 'post:list'])]
+    private int $repliesCount = 0;
 
     #[ORM\Column(options: ['default' => 0])]
     #[Groups(['post:read', 'post:list'])]

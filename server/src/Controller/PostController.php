@@ -174,7 +174,7 @@ class PostController extends AbstractController
                 $uploadsDir = $this->getParameter('post_image_directory'); // défini dans services.yaml
                 $filename = uniqid() . '.' . $imageFile->guessExtension();
                 $imageFile->move($uploadsDir, $filename);
-                $post->setImageUrl('/uploads/' . $filename); // Chemin public relatif
+                $post->setImageUrl('/uploads/posts_images' . $filename); // Chemin public relatif
             }
 
             // Sauvegarde
@@ -222,6 +222,10 @@ class PostController extends AbstractController
 
         $result = $this->postRepository->findPaginated($page, $limit, $filters);
 
+        // Pour retourner l'info de l'auteur, il faut que la sérialisation du Post inclue l'utilisateur
+        // Ajoutez le groupe "user:public" (ou similaire) sur les propriétés User à exposer dans l'entité User
+        // Puis ajoutez ce groupe ici dans les options de sérialisation
+
         return $this->json(
             [
                 'posts' => $result['items'],
@@ -236,7 +240,7 @@ class PostController extends AbstractController
             ],
             Response::HTTP_OK,
             [],
-            ['groups' => ['post:list']]
+            ['groups' => ['post:list', 'user:read', 'user:list', 'post:read']]
         );
     }
 
