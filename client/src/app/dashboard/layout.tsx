@@ -10,12 +10,12 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <main className="flex flex-col h-screen max-h-screen">
+        <main className="flex flex-col h-screen max-h-fit">
             <Header />
-            <div className="flex-grow-1 flex flex-row md:sticky ">
-                <Menu className="hidden md:block md:sticky max-h-[93vh]  top-16  overflow-y-hidden" />
+            <div className="flex-grow-1 flex flex-row md:relative md:top-16 max-h-screen overflow-hidden">
+                <Menu className="hidden md:block h-screen max-h-[93vh] " />
                 {children}
-                <FindFriends className="hidden md:flex md:sticky top-16 h-full overflow-y-hidden" />
+                <FindFriends className="hidden md:flex h-screen max-h-[93vh]" />
                 <FloatingMenu />
             </div>
         </main>

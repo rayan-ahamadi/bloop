@@ -42,7 +42,7 @@ export default function Bloop({ bloopContent }: BloopProps) {
     const username = user.username || "@error_user";
     const bloopedAt = bloopContent?.createdAt || new Date().toLocaleString();
     const content = bloopContent?.content || "No content available";
-    const image = "https://localhost:8000" + bloopContent?.imageUrl;
+    const image = bloopContent?.imageUrl ? "https://localhost:8000" + bloopContent?.imageUrl : null;
     const likes = bloopContent?.likesCount || 0;
     const rebloops = bloopContent?.retweetsCount || 0;
     const saved = bloopContent?.isPinned || false;
@@ -88,7 +88,7 @@ export default function Bloop({ bloopContent }: BloopProps) {
                             </b>
                         </p>
                         <p className="text-secondary-dark/60">
-                            {username}
+                            @{username}
                         </p>
                         <p className="text-secondary-dark/30 text-sm">
                             {elapsedTime(bloopedAt)}

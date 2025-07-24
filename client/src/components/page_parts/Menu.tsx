@@ -24,13 +24,6 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
         followers: 0,
     }
 
-    // useEffect(() => {
-    //     if (!user) {
-    //         getProfile();
-    //     }
-    // }, [user, getProfile]);
-
-    console.log("User data:", user);
     return (
         <div ref={ref} className={"absolute md:static bg-secondary-dark/25 md:bg-secondary flex flex-col items-left border-secondary-dark md:border-r-4 w-screen h-screen md:w-1/5 md:z-20 top-0 " + props.className} onClick={(e) => props.displayMenu && props.displayMenu(e)}> {/*Overlay*/}
             <div className={`mobile bg-secondary md:hidden flex flex-col items-left w-[75vw] p-7 transition-all duration-1000  h-full ease top-0 ${props.menuOpen ? "translate-x-[0%]" : "translate-x-[-100%]"

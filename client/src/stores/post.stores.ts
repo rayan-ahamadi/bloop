@@ -18,7 +18,7 @@ export const usePostStore = create<PostState>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await createPost(post);
-      if (response.error || response.status !== 201) {
+      if (response.error) {
         throw new Error(response.error);
       }
       set({ loading: false });

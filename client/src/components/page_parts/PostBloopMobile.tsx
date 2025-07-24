@@ -49,14 +49,20 @@ export default function BloopPostMobile() {
                     language: "fr",
                 })
                 toast.success("Bloop posté avec succès!");
-                form.reset();
+                form.reset({
+                    content: "",
+                    image: undefined,
+                    type: "original",
+                    language: "fr",
+                });
             } else {
                 toast.error("Vous devez être connecté pour poster un bloop.");
             }
 
 
         } catch (error) {
-            toast.error("Erreur lors de la publication du bloop: ")
+            toast.error("Erreur lors de la publication du bloop")
+            console.error("Erreur dans handlePost:", error);
         }
     };
 

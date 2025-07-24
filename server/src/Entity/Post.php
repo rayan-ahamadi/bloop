@@ -107,16 +107,17 @@ class Post
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups(['post:read'])]
     private ?\DateTimeInterface $deletedAt = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['post:read'])]
+    
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: UserLikePost::class)]
+    #[Groups(['post:read'])]
     private Collection $likes;
 
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: UserRepost::class)]
+    #[Groups(['post:read'])]
     private Collection $reposts;
 
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: UserSavePost::class)]
+    #[Groups(['post:read'])]
     private Collection $savedPosts;
 
     public function __construct()
@@ -126,6 +127,7 @@ class Post
         $this->savedPosts = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+        $this->deletedAt = null;
     }
        
     public function getId(): ?int

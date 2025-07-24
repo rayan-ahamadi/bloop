@@ -64,6 +64,11 @@ export const useUserStore = create<UserState>()(
             error: error instanceof Error ? error.message : String(error),
             loading: false,
           });
+
+          // Une erreur dans le dashboard signifie que le token n'est plus valide
+          set({ user: null }); // Réinitialise l'utilisateur en cas d'erreur
+          localStorage.removeItem("token"); // Supprime le token en cas d'erreur
+          throw error; // Propagation de l'erreur pour gestion ultérieure
         }
       },
 
@@ -110,8 +115,15 @@ export const useUserStore = create<UserState>()(
           const item = localStorage.getItem(name);
           return item ? JSON.parse(item) : null;
         },
-        setItem: (name, value) => localStorage.setItem(name, value),
+        setItem: (name, value) =>
+          localStorage.setItem(name, JSON.stringify(value)),
         removeItem: (name) => localStorage.removeItem(name),
+      },
+      onRehydrateStorage: () => {
+        console.log("🔁 Rehydrating Zustand store...");
+        return (state) => {
+          console.log("✅ Rehydrated with state:", state);
+        };
       },
     }
   )

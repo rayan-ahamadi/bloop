@@ -68,11 +68,11 @@ export default function BloopPost() {
 
     return (
         <Form {...form}>
-            <div className="w-[95%] relative top-2 hidden md:block">
+            <div className="w-full hidden md:block sticky top-0 bg-white">
                 <Toaster richColors position="top-center" closeButton={false} />
                 <form
                     onSubmit={form.handleSubmit(handlePost)}
-                    className="inputs flex flex-row items-start gap-2 p-4 border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black]"
+                    className="inputs flex flex-row items-start gap-2 p-4 border-b-2 border-secondary-dark"
                 >
                     <Image
                         src={
@@ -133,8 +133,8 @@ export default function BloopPost() {
                                                 <Image
                                                     src={URL.createObjectURL(field.value)}
                                                     alt="Aperçu de l'image"
-                                                    width={300}
-                                                    height={300}
+                                                    width={500}
+                                                    height={500}
                                                     loading="lazy"
                                                     style={{
                                                         objectFit: "cover",
