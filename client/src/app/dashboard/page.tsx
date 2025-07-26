@@ -5,7 +5,12 @@ import Bloop from "@/components/page_parts/Bloop";
 import BloopPost from "@/components/page_parts/PostBloop";
 import { getPosts } from "@/services/API/post.api";
 import { useUserStore } from "@/stores/user.stores";
+import { usePostStore } from "@/stores/post.stores";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+
 
 type Pagination = {
     totalItems: number;
@@ -25,6 +30,7 @@ export default function DashboardHome() {
     const [hasHydrated, setHasHydrated] = useState(false);
     const router = useRouter();
     const { user, getProfile } = useUserStore();
+    const { toggleLike, repost, savePost, deleteRepost } = usePostStore();
     const [bloops, setBloops] = useState<Post>({
         posts: [],
         pagination: {
@@ -84,12 +90,79 @@ export default function DashboardHome() {
         return null;
     }
 
+    const handleLike = async (
+        postId: number,
+        bloopState: { hasLiked: boolean;[key: string]: any },
+        setBloopState: (state: any) => void
+    ) => {
+        try {
+            await toggleLike(postId);
+            setBloopState({ ...bloopState, hasLiked: !bloopState.hasLiked, likes: bloopState.hasLiked ? bloopState.likes - 1 : bloopState.likes + 1 });
+            console.log("Post liked/unliked successfully");
+            // Mettre à jour l'état local si nécessaire
+        } catch (error) {
+            console.error("Erreur lors du like du post:", error);
+            toast.error("Erreur lors du like du post", {
+                id: "bloop-list-toaster"
+            });
+        }
+    };
+
+    const handleRepost = async (
+        postId: number,
+        bloopState: { hasReposted: boolean;[key: string]: any },
+        setBloopState: (state: any) => void
+    ) => {
+        try {
+            if (bloopState.hasReposted) {
+                await deleteRepost(postId);
+            } else {
+                await repost(postId);
+            }
+            setBloopState({ ...bloopState, hasReposted: !bloopState.hasReposted, rebloops: bloopState.hasReposted ? bloopState.rebloops - 1 : bloopState.rebloops + 1 });
+            console.log("Post reposted successfully");
+            // Mettre à jour l'état local si nécessaire
+        } catch (error) {
+            console.error("Erreur lors du repost du post:", error);
+            toast.error("Erreur lors du repost du post", {
+                id: "bloop-list-toaster"
+            });
+        }
+    };
+
+    const handleSave = async (
+        postId: number,
+        bloopState: { hasSaved: boolean;[key: string]: any },
+        setBloopState: (state: any) => void
+    ) => {
+        try {
+            await savePost(postId);
+            setBloopState({ ...bloopState, saved: !bloopState.hasSaved });
+            toast.success("Bloop enregistré dans vos signets.", {
+                id: "bloop-list-toaster"
+            });
+            console.log("Post saved successfully");
+            // Mettre à jour l'état local si nécessaire
+        } catch (error) {
+            console.error("Erreur lors de la sauvegarde du post:", error);
+            toast.error("Erreur lors de la sauvegarde du post", {
+                id: "bloop-list-toaster"
+            });
+        }
+    };
+
+
+
+
+
     return (
-        <div className="flex flex-col items-center md:w-[55%] w-full md:flex-grow-1 overflow-y-scroll h-screen max-h-[93vh]">
+        <div className="flex flex-col items-center md:w-[55%] w-full md:flex-grow-1 overflow-y-scroll h-screen max-h-[93vh] z-50">
             <BloopPost />
             <div className="bloops w-full md:relative md:-z-50 ">
                 {bloops.posts.map((bloop, index) => (
-                    <Bloop key={index} bloopContent={bloop} />
+                    <Link href={`/bloop/${bloop.post.id}`} key={index} className="relative block border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
+                        <Bloop key={index} bloopContent={bloop} onLike={handleLike} onRepost={handleRepost} onSave={handleSave} />
+                    </Link>
                 ))}
             </div>
         </div>

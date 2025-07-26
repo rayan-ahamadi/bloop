@@ -5,6 +5,13 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\Post;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use App\Entity\UserLikePost;
+use App\Repository\UserLikePostRepository;
+use App\Entity\User;
 
 final class PostLikeController extends AbstractController
 {
@@ -15,7 +22,7 @@ final class PostLikeController extends AbstractController
         $currentUser = $tokenStorage->getToken()->getUser();
 
         $existingLike = $likeRepo->findOneBy([
-            'user' => $currentUser,
+            'user_id' => $currentUser,
             'post' => $post
         ]);
 

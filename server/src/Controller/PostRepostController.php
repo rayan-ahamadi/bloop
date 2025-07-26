@@ -5,6 +5,13 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Entity\Post;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\UserRepost;
+use App\Repository\UserRepostRepository;
+use App\Entity\User;
 
 final class PostRepostController extends AbstractController
 {
@@ -25,7 +32,7 @@ final class PostRepostController extends AbstractController
         }
 
         $repost = new UserRepost();
-        $repost->setUserId($user);
+        $repost->setUser($user);
         $repost->setPost($post);
         $repost->setRepostedAt(new \DateTimeImmutable());
 
@@ -33,7 +40,7 @@ final class PostRepostController extends AbstractController
         $em->flush();
 
         // Incrémenter le compteur de reposts du post
-        $post->incrementRepostsCount();
+        $post->incrementRetweetsCount();
 
         return $this->json(['message' => 'Post reposted successfully'], 201);
     }
@@ -67,7 +74,7 @@ final class PostRepostController extends AbstractController
         $em->flush();
 
         // Décrémenter le compteur de reposts du post
-        $post->decrementRepostsCount();
+        $post->decrementRetweetsCount();
 
         return $this->json(['message' => 'Repost removed'], 200);
     }

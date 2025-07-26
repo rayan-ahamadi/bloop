@@ -69,7 +69,6 @@ export default function BloopPost() {
     return (
         <Form {...form}>
             <div className="w-full hidden md:block sticky top-0 bg-white">
-                <Toaster richColors position="top-center" closeButton={false} />
                 <form
                     onSubmit={form.handleSubmit(handlePost)}
                     className="inputs flex flex-row items-start gap-2 p-4 border-b-2 border-secondary-dark"

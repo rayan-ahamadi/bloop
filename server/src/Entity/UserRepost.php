@@ -51,12 +51,12 @@ class UserRepost
         return $this;
     }
 
-    public function getPost(): ?int
+    public function getPost(): ?Post
     {
         return $this->post;
     }
 
-    public function setPost(int $post): static
+    public function setPost(Post $post): static
     {
         $this->post = $post;
 
@@ -78,5 +78,12 @@ class UserRepost
     public function getUser(): User
     {
         return $this->user_id;
+    }
+
+    public function setUser(User $user): static
+    {
+        $this->user_id = $user;
+
+        return $this;
     }
 }

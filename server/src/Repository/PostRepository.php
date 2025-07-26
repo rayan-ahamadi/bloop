@@ -45,12 +45,26 @@ class PostRepository extends ServiceEntityRepository
      */
     public function findPaginated(int $page = 1, int $limit = 10, array $filters = []): array
     {
+
+
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.user', 'u')
             ->addSelect('u')
             ->where('p.deletedAt IS NULL')
             ->andWhere('p.status = :status')
             ->setParameter('status', 'active');
+
+        // Récupération de l'utilisateur
+        if (!empty($filters['user'])) {
+            /** @var User $user */
+            $user = $filters['user'];
+            $qb->addSelect(
+            '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserLikePost ulp WHERE ulp.post = p AND ulp.user_id = :user_id) THEN true ELSE false END) AS hasLiked',
+            '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserRepost ur WHERE ur.post = p AND ur.user_id = :user_id) THEN true ELSE false END) AS hasReposted',
+            '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserSavePost usp WHERE usp.post = p AND usp.user_id = :user_id) THEN true ELSE false END) AS hasSaved'
+            )
+            ->setParameter('user_id', $user->getId());
+        }
 
         // Filtres
         if (!empty($filters['user_id'])) {
@@ -82,6 +96,34 @@ class PostRepository extends ServiceEntityRepository
            ->setMaxResults($limit);
 
         $posts = $qb->getQuery()->getResult();
+
+        // Restructurer les résultats pour intégrer les colonnes calculées
+        if (isset($filters['user'])) {
+            $posts = array_map(function ($post) {
+                if (is_array($post)) {
+                    // Si c'est un tableau (avec colonnes calculées)
+                    $postData = $post[0]; // L'objet principal
+                    // On ne peut pas assigner directement à un objet Post, 
+                    // donc on retourne un tableau avec les données
+                    $postArray = [
+                        'post' => $postData,
+                        'hasLiked' => $post['hasLiked'],
+                        'hasReposted' => $post['hasReposted'],
+                        'hasSaved' => $post['hasSaved']
+                    ];
+                    return $postArray;
+                } else {
+                    // Si c'est directement un objet Post
+                    return [
+                        'post' => $post,
+                        'hasLiked' => false,
+                        'hasReposted' => false,
+                        'hasSaved' => false
+                    ];
+                }
+            }, $posts);
+        }
+        
 
         // Compter le total
         $countQb = $this->createQueryBuilder('p')

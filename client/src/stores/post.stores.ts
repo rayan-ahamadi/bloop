@@ -1,6 +1,15 @@
 import Post from "@/types/post.types";
 import { create } from "zustand";
-import { createPost, getPosts, getPost } from "@/services/API/post.api";
+
+import {
+  createPost,
+  getPosts,
+  getPost,
+  toggleLikePost,
+  repostPost,
+  savePost,
+  deleteRepost,
+} from "@/services/API/post.api";
 
 type PostState = {
   loading: boolean;
@@ -8,6 +17,10 @@ type PostState = {
   addPost: (post: Post) => void;
   fetchPosts: () => Promise<void>;
   fetchPost: (id: number) => Promise<Post | null>;
+  toggleLike: (postId: number) => Promise<void>;
+  repost: (postId: number) => Promise<void>;
+  savePost: (postId: number) => Promise<void>;
+  deleteRepost: (postId: number) => Promise<void>;
 };
 
 export const usePostStore = create<PostState>((set) => ({
@@ -48,6 +61,58 @@ export const usePostStore = create<PostState>((set) => ({
       const post = await getPost(id);
       set({ loading: false });
       return post;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      set({ error: message, loading: false });
+      throw error; // ← important : on relânce l'erreur ici
+    }
+  },
+
+  toggleLike: async (postId: number) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await toggleLikePost(postId);
+      set({ loading: false });
+      return response;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      set({ error: message, loading: false });
+      throw error; // ← important : on relânce l'erreur ici
+    }
+  },
+
+  repost: async (postId: number) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await repostPost(postId);
+      set({ loading: false });
+      return response;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      set({ error: message, loading: false });
+      throw error; // ← important : on relânce l'erreur ici
+    }
+  },
+
+  savePost: async (postId: number) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await savePost(postId);
+      set({ loading: false });
+      return response;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      set({ error: message, loading: false });
+      throw error; // ← important : on relânce l'erreur ici
+    }
+  },
+
+  deleteRepost: async (postId: number) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await deleteRepost(postId);
+      set({ loading: false });
+      return response;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       set({ error: message, loading: false });

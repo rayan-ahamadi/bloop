@@ -70,7 +70,6 @@ export default function BloopPostMobile() {
     return (
         <Form {...form} >
             <div className="w-[95%] relative top-2">
-                <Toaster richColors position="top-center" closeButton={false} />
                 <form
                     onSubmit={form.handleSubmit(handlePost)}
                     className="inputs flex flex-row items-start gap-2 p-4 border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black]"

@@ -9,6 +9,7 @@ import FloppyIcon from "@/components/icons/floppy.svg";
 import { User } from "@/types/user.types";
 
 
+
 // Bloop = l'équivalent d'un tweet sur Twitter.
 /**
  * Bloop component.
@@ -18,35 +19,74 @@ import { User } from "@/types/user.types";
  */
 
 interface BloopContent {
-    user?: Partial<User>;
-    createdAt?: string | Date;
-    content?: string;
-    imageUrl?: string;
-    replies?: number;
-    likesCount?: number;
-    retweetsCount?: number;
-    repliesCount?: number;
-    isPinned?: boolean;
-    profilePicture?: string;
+    post: {
+        id?: number;
+        user?: Partial<User>;
+        createdAt?: string | Date;
+        content?: string;
+        imageUrl?: string;
+        replies?: number;
+        likesCount?: number;
+        retweetsCount?: number;
+        repliesCount?: number;
+        isPinned?: boolean;
+        profilePicture?: string;
+        hasLiked?: boolean;
+        hasReposted?: boolean;
+        hasSaved?: boolean;
+    };
+    hasLiked?: boolean;
+    hasReposted?: boolean;
+    hasSaved?: boolean;
 }
 
 interface BloopProps {
     bloopContent: BloopContent;
+    onLike: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
+    onRepost: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
+    onSave: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
 }
 
-export default function Bloop({ bloopContent }: BloopProps) {
-    const user = bloopContent?.user || {};
+export default function Bloop(
+    {
+        bloopContent,
+        onLike,
+        onRepost,
+        onSave,
+    }: BloopProps,
+) {
+    const user = bloopContent?.post?.user || {};
 
-    const profilePicture = "https://localhost:8000" + (user.avatarUrl || "/uploads/avatars/user.png");
-    const name = user.name || "Error User";
-    const username = user.username || "@error_user";
-    const bloopedAt = bloopContent?.createdAt || new Date().toLocaleString();
-    const content = bloopContent?.content || "No content available";
-    const image = bloopContent?.imageUrl ? "https://localhost:8000" + bloopContent?.imageUrl : null;
-    const likes = bloopContent?.likesCount || 0;
-    const rebloops = bloopContent?.retweetsCount || 0;
-    const saved = bloopContent?.isPinned || false;
-    const replies = bloopContent?.repliesCount || 0;
+    const [bloopState, setBloopState] = React.useState({
+        id: bloopContent?.post?.id || 0,
+        profilePicture: "https://localhost:8000" + (user.avatarUrl || "/uploads/avatars/user.png"),
+        name: user.name || "Error User",
+        username: user.username || "@error_user",
+        bloopedAt: bloopContent?.post?.createdAt || new Date().toLocaleString(),
+        content: bloopContent?.post?.content || "No content available",
+        image: bloopContent?.post?.imageUrl ? "https://localhost:8000" + bloopContent?.post?.imageUrl : null,
+        likes: bloopContent?.post?.likesCount || 0,
+        rebloops: bloopContent?.post?.retweetsCount || 0,
+        replies: bloopContent?.post?.repliesCount || 0,
+        saved: bloopContent?.hasSaved || false,
+        hasLiked: bloopContent?.hasLiked || false,
+        hasReposted: bloopContent?.hasReposted || false,
+    });
+
+    const {
+        profilePicture,
+        name,
+        username,
+        bloopedAt,
+        content,
+        image,
+        likes,
+        rebloops,
+        replies,
+        saved,
+        hasLiked,
+        hasReposted,
+    } = bloopState;
 
     // Calcule le le temps écoulé depuis la publication du bloop. 
     // TODO : mettre dans un fichier utils
@@ -69,8 +109,9 @@ export default function Bloop({ bloopContent }: BloopProps) {
         }
     };
 
+
     return (
-        <div className="flex flex-col p-4 bg-secondary shadow-md w-full border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
+        <div className="flex flex-col p-4 bg-secondary cursor-pointer hover:bg-secondary/30 shadow-md w-full ">
             <div className="bloopscontent flex flex-row gap-4 items-start">
                 <Image
                     src={profilePicture}
@@ -115,19 +156,41 @@ export default function Bloop({ bloopContent }: BloopProps) {
             <div className="bloopsstats flex flex-row items-center justify-end-safe">
                 <div className="stats-container border-2 border-secondary-dark bg-primary rounded-md shadow-[4px_4px_0_0_black] flex flex-row items-center gap-6 p-2 mt-2">
                     <span className="flex items-center gap-1">
-                        <ChatIcon className="inline-block cursor-pointer hover:fill-accent/80" />
+                        <ChatIcon className="inline-block cursor-pointer hover:fill-accent/90" />
                         {replies}
                     </span>
                     <span className="flex items-center gap-1">
-                        <HeartIcon className="inline-block cursor-pointer hover:fill-accent/80" />
+                        <HeartIcon
+                            className={"inline-block cursor-pointer hover:fill-accent/90 " + (hasLiked ? "text-accent fill-accent" : "")}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onLike(bloopState.id, bloopState, setBloopState);
+                            }}
+                        />
                         {likes}
                     </span>
                     <span className="flex items-center gap-1">
-                        <PaperPlaneIcon className="inline-block cursor-pointer hover:fill-accent/80" />
+                        <PaperPlaneIcon
+                            className={"inline-block cursor-pointer hover:fill-accent/90 " + (hasReposted ? "text-accent fill-accent" : "")}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onRepost(bloopState.id, bloopState, setBloopState)
+                            }
+                            }
+                        />
                         {rebloops}
                     </span>
                     <span className="flex items-center gap-1">
-                        <FloppyIcon className={"inline-block cursor-pointer hover:fill-accent/80 " + (saved ? "text-accent fill-accent" : "")} />
+                        <FloppyIcon
+                            className={"inline-block cursor-pointer hover:fill-accent/90 " + (saved ? "text-accent fill-accent" : "")}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onSave(bloopState.id, bloopState, setBloopState)
+                            }}
+                        />
                     </span>
                 </div>
             </div>

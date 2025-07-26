@@ -5,6 +5,13 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Entity\Post;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\UserSavePost;
+use App\Entity\User;
+use App\Repository\UserSavePostRepository;
 
 final class PostSaveController extends AbstractController
 {
@@ -33,7 +40,7 @@ final class PostSaveController extends AbstractController
 
         // Sinon, on sauvegarde
         $save = new UserSavePost();
-        $save->setUserId($user);
+        $save->setUser($user);
         $save->setPost($post);
         $save->setSavedAt(new \DateTimeImmutable());
 

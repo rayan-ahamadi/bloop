@@ -224,13 +224,19 @@ class PostController extends AbstractController
     #[Route('', name: 'post_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
+
+
+        $user = $this->getUser();
+
+
         $page = max(1, $request->query->getInt('page', 1));
         $limit = max(1, min(50, $request->query->getInt('limit', 10))); // Limite entre 1 et 50
         $filters = [
             'user_id' => $request->query->get('user_id'),
             'type' => $request->query->get('type'),
             'language' => $request->query->get('language'),
-            'search' => $request->query->get('search')
+            'search' => $request->query->get('search'),
+            'user' => $user ? $user : null
         ];
 
         $result = $this->postRepository->findPaginated($page, $limit, $filters);
