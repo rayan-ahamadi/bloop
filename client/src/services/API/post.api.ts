@@ -3,12 +3,36 @@ import { Post } from "@/types/post.types"; // à adapter à ton type
 
 // 🟢 Créer un post
 export const createPost = async (postData: Partial<Post>) => {
+  console.log("Données avant FormData:", postData);
+
   const data = new FormData();
+
+  // Traiter chaque champ individuellement
   Object.entries(postData).forEach(([key, value]) => {
-    if (value !== undefined) {
-      data.append(key, value);
+    if (value !== undefined && value !== null) {
+      if (key === "image" && value instanceof File) {
+        // Traitement spécial pour les fichiers
+        console.log(
+          `Ajout du fichier ${key}:`,
+          value.name,
+          value.size,
+          "bytes"
+        );
+        data.append("image", value);
+      } else if (typeof value === "string" || typeof value === "number") {
+        // Traitement pour les chaînes et nombres
+        console.log(`Ajout du champ ${key}:`, value);
+        data.append(key, String(value));
+      }
     }
   });
+
+  // Debug FormData
+  console.log("FormData créé:");
+  for (let [key, value] of data.entries()) {
+    console.log(`${key}:`, value);
+  }
+
   const response = await axios.post("/posts", data, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -36,19 +60,32 @@ export const searchPosts = async (query: string) => {
 };
 
 // 📄 Détails d’un post
-export const getPost = async (id: number) => {
-  const response = await axios.get(`/posts/${id}`);
+export const getPost = async (id: number, page: number) => {
+  const response = await axios.get(`/posts/${id}`, {
+    params: {
+      page: page || 1, // Page par défaut à 1 si non spécifiée
+    },
+  });
   return response.data;
 };
 
 // ✏️ Modifier un post
-export const updatePost = async (id: number, data) => {
+export const updatePost = async (id: number, postData: any) => {
   const formData = new FormData();
-  Object.entries(data).forEach(([key, value]) => {
-    if (value !== undefined) {
-      formData.append(key, value);
+
+  // Traiter chaque champ individuellement
+  Object.entries(postData).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (key === "image" && value instanceof File) {
+        // Traitement spécial pour les fichiers
+        formData.append("image", value);
+      } else if (typeof value === "string" || typeof value === "number") {
+        // Traitement pour les chaînes et nombres
+        formData.append(key, String(value));
+      }
     }
   });
+
   const response = await axios.put(`/posts/${id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",

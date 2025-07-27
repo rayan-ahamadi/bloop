@@ -71,7 +71,9 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                                     height={17}
                                     className="inline-block mr-2 h-auto align-middle"
                                 />
-                                {link.label}
+                                <span className={link.active ? "font-bold" : ""}>
+                                    {link.label}
+                                </span>
                             </Button>
                         </Link>
                     ))}
@@ -80,7 +82,7 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
             <div className="desktop hidden md:flex md:flex-col md:justify-between md:items-left p-8 h-full bg-accent">
                 <div className="links flex flex-col items-left w-full mt-4 px-5">
                     {links.map((link, index) => (
-                        <Link key={index} href={link.href} className="flex gap-4 items-center btn-accent mb-6 font-bold text-2xl  hover:underline hover:underline-offset-4 hover:transition-all hover:duration-300 hover:ease-in-out">
+                        <Link key={index} href={link.href} className="flex gap-4 items-center btn-accent mb-6  text-2xl  hover:underline hover:underline-offset-4 hover:transition-all hover:duration-300 hover:ease-in-out">
                             <div className={"icons " + (link.active ? "bg-primary border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] " : " ")}>
                                 <Image
                                     src={link.icon}
@@ -91,7 +93,9 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                                 />
                             </div>
 
-                            {link.label}
+                            <span className={link.active ? "font-bold" : ""}>
+                                {link.label}
+                            </span>
                         </Link>
                     ))}
                 </div>

@@ -259,6 +259,29 @@ class Post
         return $this;
     }
 
+    public function getRepliesCount(): int
+    {
+        return $this->repliesCount;
+    }
+
+    public function setRepliesCount(int $repliesCount): static
+    {
+        $this->repliesCount = $repliesCount;
+        return $this;
+    }
+
+    public function incrementRepliesCount(): static
+    {
+        $this->repliesCount++;
+        return $this;
+    }
+
+    public function decrementRepliesCount(): static
+    {
+        $this->repliesCount = max(0, $this->repliesCount - 1);
+        return $this;
+    }
+
     public function getViewsCount(): int
     {
         return $this->viewsCount;

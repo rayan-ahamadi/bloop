@@ -139,6 +139,14 @@ class PostController extends AbstractController
             $language = $request->request->get('language', 'fr');
             $imageFile = $request->files->get('image');
 
+            $this->logger->info('Données reçues depuis FormData: ' . json_encode([
+                'content' => $content,
+                'type' => $type,
+                'parent_post_id' => $parentPostId,
+                'language' => $language,
+                'image_file' => $imageFile ? $imageFile->getClientOriginalName() : null
+            ]));
+
             // Construction manuelle du DTO
             $createPostDto = new CreatePostDto();
             $createPostDto->setContent($content);
@@ -184,6 +192,14 @@ class PostController extends AbstractController
             // Sauvegarde
             $this->postRepository->save($post, true);
 
+            if ($type === 'reply' && $parentPostId) {
+                $parentPost = $this->postRepository->find($parentPostId);
+                if ($parentPost) {
+                    $parentPost->incrementRepliesCount();
+                    $this->postRepository->save($parentPost, true);
+                }
+            }
+
             return $this->json(
                 [
                     'message' => 'Post créé avec succès',
@@ -196,7 +212,7 @@ class PostController extends AbstractController
                 ],
                 Response::HTTP_CREATED,
                 [],
-                ['groups' => ['post:read']]
+                ['groups' => ['post:read', 'user:read', 'user:list', 'post:list']]
             );
 
         } catch (\Exception $e) {
@@ -325,7 +341,65 @@ class PostController extends AbstractController
     }
 
     #[Route('/{id}', name: 'post_read', methods: ['GET'])]
-    public function read(int $id): JsonResponse
+    public function read(int $id, Request $request): JsonResponse
+    {   
+
+
+        // Récupération des paramètres de pagination depuis l'URL
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = max(1, min(50, $request->query->getInt('limit', 10)));
+
+        // Cet route va permettre de lire un post, il faudrait retourner le fil précédent (réponses d'avant le post si existant) et le fil suivant (réponses après le post)
+        $this->logger->info("Lecture du post", ['post_id' => $id]);
+
+        $user = $this->getUser();
+        if ($user) {
+            $this->logger->info('Utilisateur connecté', ['user_id' => $user->getId()]);
+        } else {
+            $this->logger->info('Aucun utilisateur connecté');
+        }
+
+        $postEntity = $this->postRepository->find($id);
+
+        $post = $this->postRepository->findPostWithUserDetails($postEntity, null, null, $user ? $user : null);
+        if (!$post) {
+            return $this->json(
+                ['error' => 'Post non trouvé'],
+                Response::HTTP_NOT_FOUND
+            );
+        }
+        // Récupère le fil de discussion précédent
+        $previousPost = $this->postRepository->findPreviousToPost($postEntity, $user ? $user : null);
+
+        // Récupère les commentaires (réponses) du post
+        $postReplies = $this->postRepository->findRepliesToPost($postEntity, $page, $limit, $user ? $user : null);
+
+        // Incrémenter le compteur de vues
+        $postEntity->incrementViewsCount();
+        $this->postRepository->save($postEntity, true);
+
+        return $this->json(
+            [   
+                'ancestorThread' => $previousPost,
+                "post" => $post,
+                "replies" => $postReplies['items'],
+                'repliesPagination' => [
+                    'totalItems' => $postReplies['totalItems'],
+                    'totalPages' => $postReplies['totalPages'],
+                    'currentPage' => $postReplies['currentPage'],
+                    'itemsPerPage' => $postReplies['itemsPerPage'],
+                    'hasNextPage' => $postReplies['hasNextPage'],
+                    'hasPreviousPage' => $postReplies['hasPreviousPage']
+                ]
+            ],
+            Response::HTTP_OK,
+            [],
+            ['groups' => ['post:read', 'post:list', 'user:read', 'user:list']]
+        );
+    }
+    
+    #[Route('/{id}/replies', name: 'post_replies', methods: ['GET'])]
+    public function replies(int $id, Request $request): JsonResponse
     {
         $post = $this->postRepository->find($id);
         if (!$post) {
@@ -335,15 +409,26 @@ class PostController extends AbstractController
             );
         }
 
-        // Incrémenter le compteur de vues
-        $post->incrementViewsCount();
-        $this->postRepository->save($post, true);
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = max(1, min(50, $request->query->getInt('limit', 10)));
+
+        $result = $this->postRepository->findRepliesToPost($post, $page, $limit);
 
         return $this->json(
-            $post,
+            [
+                'replies' => $result['items'],
+                'pagination' => [
+                    'totalItems' => $result['totalItems'],
+                    'totalPages' => $result['totalPages'],
+                    'currentPage' => $result['currentPage'],
+                    'itemsPerPage' => $result['itemsPerPage'],
+                    'hasNextPage' => $result['hasNextPage'],
+                    'hasPreviousPage' => $result['hasPreviousPage']
+                ]
+            ],
             Response::HTTP_OK,
             [],
-            ['groups' => ['post:read']]
+            ['groups' => ['post:list']]
         );
     }
 
@@ -576,39 +661,7 @@ class PostController extends AbstractController
         }
     }
 
-    #[Route('/{id}/replies', name: 'post_replies', methods: ['GET'])]
-    public function replies(int $id, Request $request): JsonResponse
-    {
-        $post = $this->postRepository->find($id);
-        if (!$post) {
-            return $this->json(
-                ['error' => 'Post non trouvé'],
-                Response::HTTP_NOT_FOUND
-            );
-        }
-
-        $page = max(1, $request->query->getInt('page', 1));
-        $limit = max(1, min(50, $request->query->getInt('limit', 10)));
-
-        $result = $this->postRepository->findRepliesToPost($post, $page, $limit);
-
-        return $this->json(
-            [
-                'replies' => $result['items'],
-                'pagination' => [
-                    'totalItems' => $result['totalItems'],
-                    'totalPages' => $result['totalPages'],
-                    'currentPage' => $result['currentPage'],
-                    'itemsPerPage' => $result['itemsPerPage'],
-                    'hasNextPage' => $result['hasNextPage'],
-                    'hasPreviousPage' => $result['hasPreviousPage']
-                ]
-            ],
-            Response::HTTP_OK,
-            [],
-            ['groups' => ['post:list']]
-        );
-    }
+    
 
     private function createPostFromDto(Post $post, CreatePostDto $dto, User $user): void
     {

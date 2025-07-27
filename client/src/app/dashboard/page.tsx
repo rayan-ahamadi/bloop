@@ -137,10 +137,13 @@ export default function DashboardHome() {
     ) => {
         try {
             await savePost(postId);
-            setBloopState({ ...bloopState, saved: !bloopState.hasSaved });
-            toast.success("Bloop enregistré dans vos signets.", {
-                id: "bloop-list-toaster"
-            });
+            const newState = !bloopState.hasSaved
+            setBloopState({ ...bloopState, saved: newState });
+            if (newState === true) {
+                toast.success("Bloop enregistré dans vos signets.",);
+            } else {
+                toast.success("Bloop retiré de vos signets.");
+            }
             console.log("Post saved successfully");
             // Mettre à jour l'état local si nécessaire
         } catch (error) {
@@ -160,7 +163,7 @@ export default function DashboardHome() {
             <BloopPost />
             <div className="bloops w-full md:relative md:-z-50 ">
                 {bloops.posts.map((bloop, index) => (
-                    <Link href={`/bloop/${bloop.post.id}`} key={index} className="relative block border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
+                    <Link href={`/dashboard/bloop/${bloop.post.id}`} key={index} className="relative block border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
                         <Bloop key={index} bloopContent={bloop} onLike={handleLike} onRepost={handleRepost} onSave={handleSave} />
                     </Link>
                 ))}

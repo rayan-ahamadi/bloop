@@ -6,11 +6,12 @@ use App\Entity\Post;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query;
 
 /**
  * @extends ServiceEntityRepository<Post>
  *
- * @method Post|null find($id, $lockMode = null, $lockVersion = null)
+ * @method array find($id, $lockMode = null, $lockVersion = null, ?User $user = null)
  * @method Post|null findOneBy(array $criteria, array $orderBy = null)
  * @method Post[]    findAll()
  * @method Post[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
@@ -38,6 +39,45 @@ class PostRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /**
+     * Trouve un post par son ID, avec les données de l'utilisateur si fourni
+     */
+    public function findPostWithUserDetails($id, $lockMode = null, $lockVersion = null, ?User $user = null): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.user', 'u')
+            ->addSelect('u')
+            ->where('p.id = :id')
+            ->andWhere('p.deletedAt IS NULL')
+            ->setParameter('id', $id); 
+        if ($user) {
+            $qb->addSelect(
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserLikePost ulp WHERE ulp.post = p AND ulp.user_id = :user_id) THEN true ELSE false END) AS hasLiked',
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserRepost ur WHERE ur.post = p AND ur.user_id = :user_id) THEN true ELSE false END) AS hasReposted',
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserSavePost usp WHERE usp.post = p AND usp.user_id = :user_id) THEN true ELSE false END) AS hasSaved'
+            )
+            ->setParameter('user_id', $user->getId());
+        } 
+
+
+        $post = $qb->getQuery()->getOneOrNullResult(Query::HYDRATE_ARRAY);
+
+        
+        if ($post) {
+            // Si on a des colonnes calculées, on restructure le résultat
+            if ($user) {
+                return [
+                    'post' => $post[0],
+                    'hasLiked' => $post['hasLiked'] ?? false,
+                    'hasReposted' => $post['hasReposted'] ?? false,
+                    'hasSaved' => $post['hasSaved'] ?? false
+                ];
+            }
+            return $post;
+        }
+        return null; // Aucun post trouvé
     }
 
     /**
@@ -227,7 +267,7 @@ class PostRepository extends ServiceEntityRepository
     /**
      * Trouve les réponses à un post spécifique
      */
-    public function findRepliesToPost(Post $post, int $page = 1, int $limit = 10): array
+    public function findRepliesToPost(Post $post, int $page = 1, int $limit = 10, User $user): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.user', 'u')
@@ -239,11 +279,42 @@ class PostRepository extends ServiceEntityRepository
             ->setParameter('parentPost', $post)
             ->orderBy('p.createdAt', 'ASC');
 
+        if ($user) {
+            $qb->addSelect(
+            '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserLikePost ulp WHERE ulp.post = p AND ulp.user_id = :user_id) THEN true ELSE false END) AS hasLiked',
+            '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserRepost ur WHERE ur.post = p AND ur.user_id = :user_id) THEN true ELSE false END) AS hasReposted',
+            '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserSavePost usp WHERE usp.post = p AND usp.user_id = :user_id) THEN true ELSE false END) AS hasSaved'
+            )
+            ->setParameter('user_id', $user->getId());
+        }
+
         $offset = ($page - 1) * $limit;
         $qb->setFirstResult($offset)
            ->setMaxResults($limit);
 
         $posts = $qb->getQuery()->getResult();
+
+        // Restructurer les résultats pour intégrer les colonnes calculées
+        if ($user) {
+            $posts = array_map(function ($post) {
+            if (is_array($post)) {
+                $postData = $post[0];
+                return [
+                'post' => $postData,
+                'hasLiked' => $post['hasLiked'] ?? false,
+                'hasReposted' => $post['hasReposted'] ?? false,
+                'hasSaved' => $post['hasSaved'] ?? false
+                ];
+            } else {
+                return [
+                'post' => $post,
+                'hasLiked' => false,
+                'hasReposted' => false,
+                'hasSaved' => false
+                ];
+            }
+            }, $posts);
+        }
 
         // Compter le total
         $countQb = $this->createQueryBuilder('p')
@@ -267,6 +338,40 @@ class PostRepository extends ServiceEntityRepository
             'hasPreviousPage' => $page > 1
         ];
     }
+
+
+    public function findPreviousToPost(Post $post, User $user): array
+    {
+        $previousPosts = [];
+
+        $current = $post->getParentPost(); // On part du parent immédiat
+
+        while ($current !== null) {
+            $hasLiked = $this->getEntityManager()->getRepository('App\Entity\UserLikePost')
+            ->findOneBy(['post' => $current, 'user' => $user]) !== null;
+
+            $hasReposted = $this->getEntityManager()->getRepository('App\Entity\UserRepost')
+            ->findOneBy(['post' => $current, 'user' => $user]) !== null;
+
+            $hasSaved = $this->getEntityManager()->getRepository('App\Entity\UserSavePost')
+            ->findOneBy(['post' => $current, 'user' => $user]) !== null;
+
+            $previousPosts[] = [
+            'post' => $current,
+            'hasLiked' => $hasLiked,
+            'hasReposted' => $hasReposted,
+            'hasSaved' => $hasSaved
+            ];
+
+            $current = $current->getParentPost();
+        }
+
+        // On inverse pour avoir l’ordre du plus ancien au plus récent
+        $previousPosts = array_reverse($previousPosts);
+
+        return $previousPosts; // On retourne tous les posts précédents
+    }
+
 
     /**
      * Recherche de posts par contenu

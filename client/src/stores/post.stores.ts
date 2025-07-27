@@ -16,7 +16,7 @@ type PostState = {
   error: string | null;
   addPost: (post: Post) => void;
   fetchPosts: () => Promise<void>;
-  fetchPost: (id: number) => Promise<Post | null>;
+  fetchPost: (id: number, page: number) => Promise<void>;
   toggleLike: (postId: number) => Promise<void>;
   repost: (postId: number) => Promise<void>;
   savePost: (postId: number) => Promise<void>;
@@ -35,6 +35,7 @@ export const usePostStore = create<PostState>((set) => ({
         throw new Error(response.error);
       }
       set({ loading: false });
+      return response;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       set({ error: message, loading: false });
@@ -55,10 +56,14 @@ export const usePostStore = create<PostState>((set) => ({
     }
   },
 
-  fetchPost: async (id: number) => {
+  fetchPost: async (id: number, page: number) => {
     set({ loading: true, error: null });
     try {
-      const post = await getPost(id);
+      page = page || 1; // Page par défaut à 1 si non spécifiée pour les réponses
+      if (page < 1) {
+        page = 1; // Assure que la page est au moins 1
+      }
+      const post = await getPost(id, page);
       set({ loading: false });
       return post;
     } catch (error) {
