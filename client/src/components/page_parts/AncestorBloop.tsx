@@ -22,6 +22,7 @@ type Post = {
         savedCount: number;
         viewsCount: number;
         impressionsCount: number;
+        repliesCount: number;
         clicksCount: number;
         engagementScore: number;
         isPinned: boolean;
@@ -75,7 +76,7 @@ export default function AncestorBloop({ postData, onLike, onRepost, onSave }: an
         image: postData?.post?.imageUrl ? "https://localhost:8000" + postData?.post?.imageUrl : null,
         likes: postData?.post?.likesCount || 0,
         rebloops: postData?.post?.retweetsCount || 0,
-        replies: postData?.post?.impressionsCount || 0,
+        replies: postData?.post?.repliesCount || 0,
         hasSaved: postData?.hasSaved || false,
         hasLiked: postData?.hasLiked || false,
         hasReposted: postData?.hasReposted || false,
@@ -93,7 +94,7 @@ export default function AncestorBloop({ postData, onLike, onRepost, onSave }: an
             image: postData?.post?.imageUrl ? "https://localhost:8000" + postData?.post?.imageUrl : null,
             likes: postData?.post?.likesCount || 0,
             rebloops: postData?.post?.retweetsCount || 0,
-            replies: postData?.post?.impressionsCount || 0,
+            replies: postData?.post?.repliesCount || 0,
             hasSaved: postData?.hasSaved || false,
             hasLiked: postData?.hasLiked || false,
             hasReposted: postData?.hasReposted || false,

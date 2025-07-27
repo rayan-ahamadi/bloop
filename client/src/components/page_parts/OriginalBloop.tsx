@@ -56,6 +56,7 @@ type Post = {
         viewsCount: number;
         impressionsCount: number;
         clicksCount: number;
+        repliesCount: number;
         engagementScore: number;
         isPinned: boolean;
         status: string;
