@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import React from "react";
 
 
 type Pagination = {
@@ -30,7 +31,7 @@ export default function DashboardHome() {
     const [hasHydrated, setHasHydrated] = useState(false);
     const router = useRouter();
     const { user, getProfile } = useUserStore();
-    const { toggleLike, repost, savePost, deleteRepost } = usePostStore();
+    const { toggleLike, repost, savePost, deleteRepost, deletePostUser } = usePostStore();
     const [bloops, setBloops] = useState<Post>({
         posts: [],
         pagination: {
@@ -85,8 +86,13 @@ export default function DashboardHome() {
 
     // TODO : Remplacer par une modal qui propose à l'utilisateur de se connecter ou de s'inscrire
     // Et afficher le dashboard en mode visiteur
+    // React.useEffect(() => {
+    //     if (!user) {
+    //         router.push("/");
+    //     }
+    // }, [user, router]);
+
     if (!user) {
-        router.push("/");
         return null;
     }
 
@@ -154,6 +160,23 @@ export default function DashboardHome() {
         }
     };
 
+    const handleDelete = async (bloopId: number) => {
+        try {
+            await deletePostUser(bloopId);
+
+            setBloops((prev) => ({
+                ...prev,
+                posts: prev.posts.filter((post) => post.post.id !== bloopId)
+            }));
+            toast.success("Bloop supprimé avec succès.");
+
+        } catch (error) {
+            console.error("Erreur lors de la suppression du bloop:", error);
+            toast.error("Erreur lors de la suppression du bloop", {
+                id: "bloop-list-toaster"
+            });
+        }
+    }
 
 
 
@@ -164,10 +187,11 @@ export default function DashboardHome() {
             <div className="bloops w-full md:relative md:-z-50 ">
                 {bloops.posts.map((bloop, index) => (
                     <Link href={`/dashboard/bloop/${bloop.post.id}`} key={index} className="relative block border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
-                        <Bloop key={index} bloopContent={bloop} onLike={handleLike} onRepost={handleRepost} onSave={handleSave} />
+                        <Bloop key={index} bloopContent={bloop} onLike={handleLike} onRepost={handleRepost} onSave={handleSave} onDelete={handleDelete} />
                     </Link>
                 ))}
             </div>
         </div>
     );
 }
+

@@ -8,6 +8,7 @@ import AncestorBloop from "./AncestorBloop";
 import Replies from "./Replies";
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type PostData = {
     ancestorThread?: any[];
@@ -30,8 +31,8 @@ type PostDetailsLayoutProps = {
 
 export default function PostDetailsLayout({ PostData, onPostUpdate }: PostDetailsLayoutProps) {
     const { ancestorThread, post, replies, repliesPagination } = PostData;
-    const { toggleLike, repost, savePost, deleteRepost, addPost } = usePostStore();
-
+    const { toggleLike, repost, savePost, deleteRepost, addPost, deletePostUser } = usePostStore();
+    const router = useRouter();
 
     const handleLike = async (postId: number) => {
         try {
@@ -175,6 +176,69 @@ export default function PostDetailsLayout({ PostData, onPostUpdate }: PostDetail
         }
     };
 
+    const handleDeleteAncestor = async (bloopId: number) => {
+        try {
+            await deletePostUser(bloopId);
+
+            console.log("Bloop deleted successfully");
+            // Mettre à jour l'état local si nécessaire
+            if (onPostUpdate) {
+                const updatedAncestorThread = ancestorThread.filter(
+                    (ancestor) => ancestor.post.id !== bloopId
+                );
+                const updatedPostData = {
+                    ...PostData,
+                    ancestorThread: updatedAncestorThread
+                };
+                onPostUpdate(updatedPostData);
+            }
+
+        } catch (error) {
+            console.error("Erreur lors de la suppression du bloop:", error);
+            toast.error("Erreur lors de la suppression du bloop");
+        }
+    }
+
+    const handleDeleteOriginal = async (bloopId: number) => {
+        try {
+            await deletePostUser(bloopId);
+
+            console.log("Bloop deleted successfully");
+            router.push('/dashboard');
+
+        } catch (error) {
+            console.error("Erreur lors de la suppression du bloop:", error);
+            toast.error("Erreur lors de la suppression du bloop");
+        }
+    };
+
+    const handleDeleteReply = async (bloopId: number) => {
+        try {
+            await deletePostUser(bloopId);
+
+            console.log("Bloop deleted successfully");
+            // Mettre à jour l'état local si nécessaire
+            if (onPostUpdate) {
+                const updatedReplies = replies.filter(
+                    (reply) => reply.post.id !== bloopId
+                );
+                const updatedPostData = {
+                    ...PostData,
+                    replies: updatedReplies,
+                    repliesPagination: {
+                        ...repliesPagination,
+                        totalItems: repliesPagination.totalItems - 1
+                    }
+                };
+                onPostUpdate(updatedPostData);
+            }
+
+        } catch (error) {
+            console.error("Erreur lors de la suppression du bloop:", error);
+            toast.error("Erreur lors de la suppression du bloop");
+        }
+    };
+
 
     if (!post) {
         return <p>Chargement du post...</p>;
@@ -193,7 +257,7 @@ export default function PostDetailsLayout({ PostData, onPostUpdate }: PostDetail
                                 onLike={handleLike}
                                 onRepost={handleRepost}
                                 onSave={handleSave}
-                            />
+                                onDelete={(bloopId) => handleDeleteAncestor(bloopId, false)} />
                         </Link>
                     ))}
                 </div>
@@ -205,6 +269,7 @@ export default function PostDetailsLayout({ PostData, onPostUpdate }: PostDetail
                 onLike={handleLike}
                 onRepost={handleRepost}
                 onSave={handleSave}
+                onDelete={(bloopId) => handleDeleteOriginal(bloopId, false)}
             />
 
             {replies && replies.length > 0 && (
@@ -217,6 +282,7 @@ export default function PostDetailsLayout({ PostData, onPostUpdate }: PostDetail
                                 onLike={handleLike}
                                 onRepost={handleRepost}
                                 onSave={handleSave}
+                                onDelete={(bloopId) => handleDeleteReply(bloopId, false)}
                             />
                         </Link>
                     ))}

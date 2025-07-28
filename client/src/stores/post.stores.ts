@@ -9,6 +9,7 @@ import {
   repostPost,
   savePost,
   deleteRepost,
+  deletePost,
 } from "@/services/API/post.api";
 
 type PostState = {
@@ -21,6 +22,7 @@ type PostState = {
   repost: (postId: number) => Promise<void>;
   savePost: (postId: number) => Promise<void>;
   deleteRepost: (postId: number) => Promise<void>;
+  deletePostUser: (postId: number) => Promise<void>;
 };
 
 export const usePostStore = create<PostState>((set) => ({
@@ -116,6 +118,19 @@ export const usePostStore = create<PostState>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await deleteRepost(postId);
+      set({ loading: false });
+      return response;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      set({ error: message, loading: false });
+      throw error; // ← important : on relânce l'erreur ici
+    }
+  },
+
+  deletePostUser: async (postId: number) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await deletePost(postId);
       set({ loading: false });
       return response;
     } catch (error) {

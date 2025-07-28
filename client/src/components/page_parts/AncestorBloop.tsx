@@ -6,6 +6,7 @@ import ChatIcon from "@/components/icons/chat.svg";
 import HeartIcon from "@/components/icons/heart.svg";
 import PaperPlaneIcon from "@/components/icons/paperPlane.svg";
 import FloppyIcon from "@/components/icons/floppy.svg";
+import BloopDropdown from "./BloopDropdown";
 
 
 
@@ -45,9 +46,10 @@ type ancestorBloopProps = {
     onLike: (postId: number) => void;
     onRepost: (postId: number) => void;
     onSave: (postId: number) => void;
+    onDelete: (bloopId: number) => void;
 }
 
-export default function AncestorBloop({ postData, onLike, onRepost, onSave }: ancestorBloopProps) {
+export default function AncestorBloop({ postData, onLike, onRepost, onSave, onDelete }: ancestorBloopProps) {
 
     type BloopState = {
         id: number;
@@ -177,6 +179,20 @@ export default function AncestorBloop({ postData, onLike, onRepost, onSave }: an
                             />
                         )}
                     </div>
+                </div>
+
+                <div className="ml-auto float-right">
+                    <BloopDropdown
+                        bloopUser={postData?.post?.user || {}}
+                        bloopId={bloopState.id}
+                        originalBloop={true}
+                        onDelete={(bloopId) => {
+                            onDelete(bloopId);
+                        }}
+                        onReport={(bloopId) => {
+                            console.log("Report bloop with ID:", bloopId);
+                        }}
+                    />
                 </div>
 
 

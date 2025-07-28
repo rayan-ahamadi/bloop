@@ -348,13 +348,13 @@ class PostRepository extends ServiceEntityRepository
 
         while ($current !== null) {
             $hasLiked = $this->getEntityManager()->getRepository('App\Entity\UserLikePost')
-            ->findOneBy(['post' => $current, 'user' => $user]) !== null;
+            ->findOneBy(['post' => $current, 'user_id' => $user]) !== null;
 
             $hasReposted = $this->getEntityManager()->getRepository('App\Entity\UserRepost')
-            ->findOneBy(['post' => $current, 'user' => $user]) !== null;
+            ->findOneBy(['post' => $current, 'user_id' => $user]) !== null;
 
             $hasSaved = $this->getEntityManager()->getRepository('App\Entity\UserSavePost')
-            ->findOneBy(['post' => $current, 'user' => $user]) !== null;
+            ->findOneBy(['post' => $current, 'user_id' => $user]) !== null;
 
             $previousPosts[] = [
             'post' => $current,

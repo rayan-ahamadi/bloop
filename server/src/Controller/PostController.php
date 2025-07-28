@@ -629,20 +629,55 @@ class PostController extends AbstractController
                 throw new AccessDeniedException('Vous n\'êtes pas autorisé à supprimer ce post');
             }
 
-            // Soft delete
-            $post->softDelete();
-            $this->postRepository->save($post, true);
+            // Commencer une transaction ACID
+            $this->entityManager->beginTransaction();
 
-            // Logging
-            $this->logger->info('Post supprimé', [
-                'post_id' => $post->getId(),
-                'user_id' => $user->getId()
-            ]);
+            try {
+                // Supprimer les likes du post
+                $this->entityManager->createQuery(
+                    'DELETE FROM App\Entity\UserLikePost ul WHERE ul.post = :post'
+                )->setParameter('post', $post)->execute();
 
-            return $this->json(
-                ['message' => 'Post supprimé avec succès'],
-                Response::HTTP_OK
-            );
+                // Supprimer les reposts du post
+                $this->entityManager->createQuery(
+                    'DELETE FROM App\Entity\UserRepost ur WHERE ur.post = :post'
+                )->setParameter('post', $post)->execute();
+
+                // Supprimer les signets/sauvegardes du post
+                $this->entityManager->createQuery(
+                    'DELETE FROM App\Entity\UserSavePost us WHERE us.post = :post'
+                )->setParameter('post', $post)->execute();
+
+                // Soft delete du post
+                $post->softDelete();
+                $this->postRepository->save($post, true);
+
+                // Si c'est une réponse, décrémenter le compteur du post parent
+                if ($post->getParentPost()) {
+                    $parentPost = $post->getParentPost();
+                    $parentPost->decrementRepliesCount();
+                    $this->postRepository->save($parentPost, true);
+                }
+
+                // Confirmer la transaction
+                $this->entityManager->commit();
+
+                // Logging
+                $this->logger->info('Post supprimé avec toutes ses relations', [
+                    'post_id' => $post->getId(),
+                    'user_id' => $user->getId()
+                ]);
+
+                return $this->json(
+                    ['message' => 'Post supprimé avec succès'],
+                    Response::HTTP_OK
+                );
+
+            } catch (\Exception $e) {
+                // Annuler la transaction en cas d'erreur
+                $this->entityManager->rollback();
+                throw $e;
+            }
 
         } catch (AccessDeniedException $e) {
             return $this->json(
@@ -650,7 +685,7 @@ class PostController extends AbstractController
                 Response::HTTP_FORBIDDEN
             );
         } catch (\Exception $e) {
-            $this->logger->error('Erreur inattendue', [
+            $this->logger->error('Erreur inattendue lors de la suppression', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

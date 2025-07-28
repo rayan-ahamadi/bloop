@@ -30,6 +30,7 @@ import HeartIcon from "@/components/icons/heart.svg";
 import PaperPlaneIcon from "@/components/icons/paperPlane.svg";
 import FloppyIcon from "@/components/icons/floppy.svg";
 import React from "react";
+import BloopDropdown from "./BloopDropdown";
 
 
 
@@ -79,9 +80,10 @@ type componentsProps = {
     onLike: (postId: number) => void;
     onRepost: (postId: number) => void;
     onSave: (postId: number) => void;
+    onDelete: (bloopId: number) => void;
 };
 
-export default function OriginalBloop({ postData, onLike, onRepost, onSave, onReply }: componentsProps) {
+export default function OriginalBloop({ postData, onLike, onRepost, onSave, onReply, onDelete }: componentsProps) {
 
     type BloopState = {
         id: number;
@@ -225,6 +227,20 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                             />
                         )}
                     </div>
+                </div>
+
+                <div className="ml-auto float-right">
+                    <BloopDropdown
+                        bloopUser={postData?.post?.user || {}}
+                        bloopId={id}
+                        originalBloop={true}
+                        onDelete={(bloopId) => {
+                            onDelete(bloopId)
+                        }}
+                        onReport={(bloopId) => {
+                            console.log("Report bloop with ID:", bloopId);
+                        }}
+                    />
                 </div>
             </div>
             <div className="bloopsstatsbuttons flex flex-row items-center justify-start gap-4 border-y-1 p-4 border-secondary-dark">

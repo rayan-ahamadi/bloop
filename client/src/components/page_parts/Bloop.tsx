@@ -7,6 +7,7 @@ import HeartIcon from "@/components/icons/heart.svg";
 import PaperPlaneIcon from "@/components/icons/paperPlane.svg";
 import FloppyIcon from "@/components/icons/floppy.svg";
 import { User } from "@/types/user.types";
+import BloopDropdown from "./BloopDropdown";
 
 
 
@@ -45,6 +46,7 @@ interface BloopProps {
     onLike: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
     onRepost: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
     onSave: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
+    onDelete: (bloopId: number) => void;
 }
 
 export default function Bloop(
@@ -53,6 +55,7 @@ export default function Bloop(
         onLike,
         onRepost,
         onSave,
+        onDelete
     }: BloopProps,
 ) {
     const user = bloopContent?.post?.user || {};
@@ -121,8 +124,10 @@ export default function Bloop(
                     className="border-1 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] mr-2 h-auto"
                 />
 
+
+
                 <div className="bloop-user-data flex flex-col gap-2">
-                    <div className="user flex flex-row items-center gap-2">
+                    <div className="user flex flex-row items-center gap-2 w-full">
                         <p>
                             <b>
                                 {name}
@@ -134,6 +139,7 @@ export default function Bloop(
                         <p className="text-secondary-dark/30 text-sm">
                             {elapsedTime(bloopedAt)}
                         </p>
+
                     </div>
                     <div className="bloop-content flex flex-col gap-2">
                         <p className="text-lg">
@@ -149,6 +155,20 @@ export default function Bloop(
                             />
                         )}
                     </div>
+                </div>
+
+                <div className="ml-auto float-right">
+                    <BloopDropdown
+                        bloopUser={bloopContent?.post?.user || {}}
+                        bloopId={bloopState.id}
+                        originalBloop={true}
+                        onDelete={(bloopId) => {
+                            onDelete(bloopId);
+                        }}
+                        onReport={(bloopId) => {
+                            console.log("Report bloop with ID:", bloopId);
+                        }}
+                    />
                 </div>
 
 
