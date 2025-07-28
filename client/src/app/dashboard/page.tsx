@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import React from "react";
+import DashHomeLoading from "@/components/page_parts/DashHomeLoading";
 
 
 type Pagination = {
@@ -81,19 +82,17 @@ export default function DashboardHome() {
         setHasHydrated(true);
     }, []);
 
-    // TODO : Faire un écran de chargement
-    if (!hasHydrated) return null;
+    if (!hasHydrated) return <DashHomeLoading />;
 
     // TODO : Remplacer par une modal qui propose à l'utilisateur de se connecter ou de s'inscrire
     // Et afficher le dashboard en mode visiteur
-    // React.useEffect(() => {
-    //     if (!user) {
-    //         router.push("/");
-    //     }
-    // }, [user, router]);
+    // if (!user) {
+    //     router.push("/");
+    // }
+
 
     if (!user) {
-        return null;
+        return <DashHomeLoading />;
     }
 
     const handleLike = async (

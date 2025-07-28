@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { forwardRef } from "react";
 import { useUserStore } from "@/stores/user.stores";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
 
 const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: React.MouseEvent<HTMLDivElement>) => void, menuOpen?: boolean }>((props, ref) => {
@@ -30,34 +31,48 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                 }`} > {/*menu*/}
                 <div className="profile">
                     <div className="profile-card bg-secondary flex flex-col items-left rounded-md shadow-[4px_4px_0_0_black] p-4 border-1 border-secondary-dark">
-                        <Image
-                            src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatars/user.png")}
-                            alt="User Avatar"
-                            width={32}
-                            height={32}
-                            className="border-2 rounded-md shadow-[4px_4px_0_0_black] mb-2"
-                        />
-                        <p>
-                            <b>
-                                {user?.name || userData.name}
-                            </b>
-                        </p>
-                        <p>
-                            @{user?.username}
-                        </p>
+                        {user ? (
+                            <>
+                                <Image
+                                    src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatars/user.png")}
+                                    alt="User Avatar"
+                                    width={32}
+                                    height={32}
+                                    className="border-2 rounded-md shadow-[4px_4px_0_0_black] mb-2"
+                                />
+                                <p>
+                                    <b>
+                                        {user?.name || userData.name}
+                                    </b>
+                                </p>
+                                <p>
+                                    @{user?.username}
+                                </p>
 
-                        <div className="flex flex-row justify-between w-full">
-                            <p>
-                                <b>
-                                    {user?.following_nb}
-                                </b> Abonnements
-                            </p>
-                            <p>
-                                <b>
-                                    {user?.followers_nb}
-                                </b> Abonnés
-                            </p>
-                        </div>
+                                <div className="flex flex-row justify-between w-full">
+                                    <p>
+                                        <b>
+                                            {user?.following_nb}
+                                        </b> Abonnements
+                                    </p>
+                                    <p>
+                                        <b>
+                                            {user?.followers_nb}
+                                        </b> Abonnés
+                                    </p>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <Skeleton className="w-8 h-8 rounded-md mb-2" />
+                                <Skeleton className="h-4 w-24 mb-2" />
+                                <Skeleton className="h-3 w-16 mb-4" />
+                                <div className="flex flex-row justify-between w-full">
+                                    <Skeleton className="h-3 w-20" />
+                                    <Skeleton className="h-3 w-16" />
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
                 <div className="links flex flex-col items-left w-full mt-4 gap-0.5">
@@ -109,23 +124,35 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
                         </Button>
                     </div>
                     <div className="bg-secondary profile-card flex flex-row item-center gap-2 border-2 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] p-4 mt-8">
-                        <Image
-                            src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatars/user.png")}
-                            alt="User Avatar"
-                            width={45}
-                            height={45}
-                            className="border-1 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] mr-2 h-auto bg-accent"
-                        />
-                        <div className="flex flex-col">
-                            <p>
-                                <b>
-                                    {user?.name || userData.name}
-                                </b>
-                            </p>
-                            <p>
-                                @{user?.username}
-                            </p>
-                        </div>
+                        {user ? (
+                            <>
+                                <Image
+                                    src={"https://localhost:8000" + (user?.avatarUrl || "/uploads/avatars/user.png")}
+                                    alt="User Avatar"
+                                    width={45}
+                                    height={45}
+                                    className="border-1 border-secondary-dark rounded-md shadow-[4px_4px_0_0_black] mr-2 h-auto bg-accent"
+                                />
+                                <div className="flex flex-col">
+                                    <p>
+                                        <b>
+                                            {user?.name || userData.name}
+                                        </b>
+                                    </p>
+                                    <p>
+                                        @{user?.username}
+                                    </p>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <Skeleton className="w-11 h-11 rounded-md mr-2" />
+                                <div className="flex flex-col">
+                                    <Skeleton className="h-4 w-24 mb-2" />
+                                    <Skeleton className="h-3 w-16" />
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

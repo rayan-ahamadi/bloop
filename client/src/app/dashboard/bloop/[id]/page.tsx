@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/user.stores';
 import { usePostStore } from '@/stores/post.stores';
 import PostDetailsLayout from '@/components/page_parts/PostDetailsLayout';
+import PostDetailLoading from '@/components/page_parts/PostDetailLoading';
 
 
 
@@ -60,17 +61,17 @@ export default function BloopDetail() {
     };
 
     // TODO : Faire un écran de chargement
-    if (!hasHydrated) return null;
+    if (!hasHydrated) return <PostDetailLoading />;
 
     // TODO : Remplacer par une modal qui propose à l'utilisateur de se connecter ou de s'inscrire
     // Et afficher le dashboard en mode visiteur
-    if (!user) {
-        router.push("/");
-        return null;
-    }
+    // if (!user) {
+    //     router.push("/");
+    //     return null;
+    // }
 
     if (loading || !postData) {
-        return <div className="flex justify-center items-center h-screen">Chargement...</div>;
+        return <PostDetailLoading />;
     }
 
 
