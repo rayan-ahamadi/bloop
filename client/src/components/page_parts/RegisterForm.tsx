@@ -20,7 +20,7 @@ import { useUserStore } from "@/stores/user.stores"
 
 
 function RegisterForm() {
-  const { login } = useUserStore()
+  const { login, loading } = useUserStore()
   const router = useRouter()
   const form = useForm<{
     name: string;
@@ -111,8 +111,15 @@ function RegisterForm() {
           {step < 4 ? (
             <Button type="button" variant={"defaultNoShadow"} className="text-2xl" onClick={nextStep}>Suivant ›</Button>
           ) : (
-            <Input type="submit" value={"S'inscrire ›"} className="font-bold bg-primary hover:bg-primary/80" />
+            loading ? (
+              <div className="flex justify-center items-center">
+                <span className="loader"></span>
+              </div>
+            ) : (
+              <Input type="submit" value={"S'inscrire ›"} className="font-bold bg-primary hover:bg-primary/80" />
+            )
           )}
+
         </div>
       </form>
     </Form>

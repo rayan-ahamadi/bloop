@@ -84,7 +84,13 @@ function LoginForm() {
           />
         </div>
         <div className="flex flex-col gap-3 mt-4">
-          <Input type="submit" value={"Connexion ›"} className="bg-primary shadow-xs hover:bg-primary/90 w-full border-2 border-secondary-dark text-secondary-dark hover:shadow-[4px_4px_0_0_black] ease-in duration-100 font-bold cursor-pointer" />
+          {loading ? (
+            <div className="flex justify-center items-center">
+              <span className="loader"></span>
+            </div>)
+            :
+            (<Input type="submit" value={"Connexion ›"} className="bg-primary shadow-xs hover:bg-primary/90 w-full border-2 border-secondary-dark text-secondary-dark hover:shadow-[4px_4px_0_0_black] ease-in duration-100 font-bold cursor-pointer" />
+            )}
         </div>
       </form>
     </Form>
