@@ -48,10 +48,18 @@ class PostRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.user', 'u')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('l.user_id', 'lu')
+            ->leftJoin('p.reposts', 'r')
+            ->leftJoin('r.user_id', 'ru')
             ->addSelect('u')
+            ->addSelect('l')
+            ->addSelect('lu')
+            ->addSelect('r')
+            ->addSelect('ru')
             ->where('p.id = :id')
             ->andWhere('p.deletedAt IS NULL')
-            ->setParameter('id', $id); 
+            ->setParameter('id', $id);
         if ($user) {
             $qb->addSelect(
                 '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserLikePost ulp WHERE ulp.post = p AND ulp.user_id = :user_id) THEN true ELSE false END) AS hasLiked',
@@ -59,7 +67,8 @@ class PostRepository extends ServiceEntityRepository
                 '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserSavePost usp WHERE usp.post = p AND usp.user_id = :user_id) THEN true ELSE false END) AS hasSaved'
             )
             ->setParameter('user_id', $user->getId());
-        } 
+        }
+        
 
 
         $post = $qb->getQuery()->getOneOrNullResult(Query::HYDRATE_ARRAY);
@@ -267,7 +276,7 @@ class PostRepository extends ServiceEntityRepository
     /**
      * Trouve les réponses à un post spécifique
      */
-    public function findRepliesToPost(Post $post, int $page = 1, int $limit = 10, User $user): array
+    public function findRepliesToPost(Post $post, int $page, int $limit, User $user): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.user', 'u')

@@ -11,7 +11,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
-import z, { late } from "zod";
+import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,6 @@ import HeartIcon from "@/components/icons/heart.svg";
 import PaperPlaneIcon from "@/components/icons/paperPlane.svg";
 import FloppyIcon from "@/components/icons/floppy.svg";
 import React from "react";
-import BloopDropdown from "./BloopDropdown";
 
 
 
@@ -39,8 +38,6 @@ const bloopSchema = z.object({
     content: z.string().min(1, "Le contenu ne peut pas être vide"),
     image: z.instanceof(File).optional(),
     parent_post_id: z.number().optional(),
-    language: z.string().optional(),
-    type: z.literal("reply"),
 });
 
 type Post = {
@@ -57,7 +54,6 @@ type Post = {
         viewsCount: number;
         impressionsCount: number;
         clicksCount: number;
-        repliesCount: number;
         engagementScore: number;
         isPinned: boolean;
         status: string;
@@ -77,13 +73,12 @@ type Post = {
 type componentsProps = {
     postData: Partial<Post>;
     onReply?: (formData: { content: string; image?: File | null, parent_post_id: number }) => void;
-    onLike: (postId: number) => void;
-    onRepost: (postId: number) => void;
-    onSave: (postId: number) => void;
-    onDelete: (bloopId: number) => void;
+    onLike: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
+    onRepost: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
+    onSave: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
 };
 
-export default function OriginalBloop({ postData, onLike, onRepost, onSave, onReply, onDelete }: componentsProps) {
+export default function OriginalBloop({ postData, onLike, onRepost, onSave, onReply }: componentsProps) {
 
     type BloopState = {
         id: number;
@@ -111,30 +106,11 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
         image: postData?.post?.imageUrl ? "https://localhost:8000" + postData?.post?.imageUrl : null,
         likes: postData?.post?.likesCount || 0,
         rebloops: postData?.post?.retweetsCount || 0,
-        replies: postData?.post?.repliesCount || 0,
+        replies: postData?.post?.impressionsCount || 0,
         hasSaved: postData?.hasSaved || false,
         hasLiked: postData?.hasLiked || false,
         hasReposted: postData?.hasReposted || false,
     });
-
-    // Mettre à jour l'état quand les props changent
-    React.useEffect(() => {
-        setBloopState({
-            id: postData?.post?.id || 0,
-            profilePicture: "https://localhost:8000" + (postData?.post?.user?.avatarUrl || "/uploads/avatars/user.png"),
-            name: postData?.post?.user?.name || "Error User",
-            username: postData?.post?.user?.username || "@error_user",
-            bloopedAt: postData?.post?.createdAt || new Date().toLocaleString(),
-            content: postData?.post?.content || "No content available",
-            image: postData?.post?.imageUrl ? "https://localhost:8000" + postData?.post?.imageUrl : null,
-            likes: postData?.post?.likesCount || 0,
-            rebloops: postData?.post?.retweetsCount || 0,
-            replies: postData?.post?.repliesCount || 0,
-            hasSaved: postData?.hasSaved || false,
-            hasLiked: postData?.hasLiked || false,
-            hasReposted: postData?.hasReposted || false,
-        });
-    }, [postData]);
     console.log("Bloop State:", bloopState);
 
 
@@ -160,8 +136,6 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
             content: "",
             image: undefined,
             parent_post_id: id,
-            language: "fr",
-            type: "reply",
         },
     });
 
@@ -228,20 +202,6 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                         )}
                     </div>
                 </div>
-
-                <div className="ml-auto float-right">
-                    <BloopDropdown
-                        bloopUser={postData?.post?.user || {}}
-                        bloopId={id}
-                        originalBloop={true}
-                        onDelete={(bloopId) => {
-                            onDelete(bloopId)
-                        }}
-                        onReport={(bloopId) => {
-                            console.log("Report bloop with ID:", bloopId);
-                        }}
-                    />
-                </div>
             </div>
             <div className="bloopsstatsbuttons flex flex-row items-center justify-start gap-4 border-y-1 p-4 border-secondary-dark">
 
@@ -258,15 +218,18 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                         </DialogHeader>
                         <DialogDescription>
                             {postData?.post?.reposts && postData.post.reposts.map((user, index) => (
-                                <div key={index} className="flex items-center gap-2">
+                                <div key={index} className="flex items-center gap-4 bg-primary p-2 rounded-md mb-2 border-2 border-secondary-dark shadow-[4px_4px_0_0_black]">
                                     <Image
-                                        src={"https://localhost:8000" + (user.avatarUrl || "/uploads/avatars/user.png")}
-                                        alt={user.name || "User Avatar"}
-                                        width={30}
-                                        height={30}
-                                        className="rounded-md"
+                                        src={"https://localhost:8000" + (user.user_id.avatarUrl || "/uploads/avatars/user.png")}
+                                        alt={user.user_id.name || "User Avatar"}
+                                        width={45}
+                                        height={45}
+                                        className="rounded-md border-1 border-secondary-dark"
                                     />
-                                    <span>{user.name || "Unknown User"}</span>
+                                    <div className="flex flex-col">
+                                        <p className="font-bold text-lg text-secondary-dark">{user.user_id.name || "Unknown User"}</p>
+                                        <p className="text-secondary-dark/80">@{user.user_id.username || "unknown_user"}</p>
+                                    </div>
                                 </div>
                             ))}
                         </DialogDescription>
@@ -286,15 +249,18 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                         </DialogHeader>
                         <DialogDescription>
                             {postData?.post?.likes && postData.post.likes.map((user, index) => (
-                                <div key={index} className="flex items-center gap-2">
+                                <div key={index} className="flex items-center gap-4 bg-primary p-2 rounded-md mb-2 border-2 border-secondary-dark shadow-[4px_4px_0_0_black]">
                                     <Image
-                                        src={"https://localhost:8000" + (user.avatarUrl || "/uploads/avatars/user.png")}
-                                        alt={user.name || "User Avatar"}
-                                        width={30}
-                                        height={30}
-                                        className="rounded-full"
+                                        src={"https://localhost:8000" + (user.user_id.avatarUrl || "/uploads/avatars/user.png")}
+                                        alt={user.user_id.name || "User Avatar"}
+                                        width={45}
+                                        height={45}
+                                        className="rounded-md border-1 border-secondary-dark"
                                     />
-                                    <span>{user.name || "Unknown User"}</span>
+                                    <div className="flex flex-col">
+                                        <p className="font-bold text-lg text-secondary-dark">{user.user_id.name || "Unknown User"}</p>
+                                        <p className="text-secondary-dark/80">@{user.user_id.username || "unknown_user"}</p>
+                                    </div>
                                 </div>
                             ))}
                         </DialogDescription>
@@ -323,7 +289,7 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                onLike(bloopState.id);
+                                onLike(bloopState.id, bloopState, setBloopState);
                             }}
                         />
                         {likes}
@@ -334,8 +300,9 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                onRepost(bloopState.id);
-                            }}
+                                onRepost(bloopState.id, bloopState, setBloopState)
+                            }
+                            }
                         />
                         {rebloops}
                     </span>
@@ -345,7 +312,7 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                onSave(bloopState.id);
+                                onSave(bloopState.id, bloopState, setBloopState)
                             }}
                         />
                     </span>
@@ -355,14 +322,7 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(data => {
-                            const formData = form.getValues();
-                            let response: any = null;
-                            if (onReply && formData.parent_post_id !== undefined) {
-                                response = onReply(formData as { content: string; image?: File | null; parent_post_id: number, type: string, language: string });
-                            }
-                            if (response) {
-                                form.reset();
-                            }
+                            if (onReply) onReply(data);
                         })
                         }
                         className="inputs flex flex-col items-start gap-2 p-4 border-y-1 border-secondary-dark"
@@ -421,30 +381,6 @@ export default function OriginalBloop({ postData, onLike, onRepost, onSave, onRe
                                             className="cursor-pointer hover:fill-accent/80"
                                             onClick={() => document.getElementById("image-upload")?.click()}
                                         />
-
-                                        {field.value && typeof field.value === "object" && (
-                                            <div className="mb-6 m-auto" style={{ position: "relative" }}>
-                                                <Image
-                                                    src={URL.createObjectURL(field.value)}
-                                                    alt="Aperçu de l'image"
-                                                    width={500}
-                                                    height={500}
-                                                    loading="lazy"
-                                                    style={{
-                                                        objectFit: "cover",
-                                                        borderRadius: "0.375rem",
-                                                        border: "2px solid var(--color-secondary-dark)",
-                                                        boxShadow: "4px 4px 0 0 black",
-                                                        width: "auto !important",
-                                                        height: "auto !important",
-                                                    }}
-                                                    className="rounded-md border-2 border-secondary-dark shadow-[4px_4px_0_0_black] relative"
-                                                />
-                                                <p className="block text-center text-xs mt-1 text-gray-600 mb-2">
-                                                    Aperçu de l'image
-                                                </p>
-                                            </div>
-                                        )}
                                     </FormItem>
                                 )}
                             />

@@ -6,6 +6,7 @@ import {
   fetchUserById as fetchUserApi,
 } from "@/services/API/user.api";
 import { persist } from "zustand/middleware";
+import { th } from "zod/v4/locales";
 
 type UserState = {
   user: User | null;
@@ -15,7 +16,7 @@ type UserState = {
   logout: () => Promise<void>;
   getProfile: () => Promise<void>;
   // register: (userData: User) => Promise<void>;
-  fetchUser: (userId: number) => Promise<void>;
+  fetchUserById: (userId: number) => Promise<void>;
   //   updateProfile: (userData: Partial<User>) => Promise<void>;
 };
 
@@ -38,6 +39,7 @@ export const useUserStore = create<UserState>()(
             error: error instanceof Error ? error.message : String(error),
             loading: false,
           });
+          throw error; // Propagation de l'erreur pour gestion ultérieure
         }
       },
 
@@ -85,16 +87,18 @@ export const useUserStore = create<UserState>()(
       //   }
       // },
 
-      fetchUser: async (userId: number) => {
+      fetchUserById: async (userId: number) => {
         set({ loading: true, error: null });
         try {
           const user = await fetchUserApi(userId);
-          set({ user, loading: false });
+          set({ loading: false });
+          return user; // Retourne l'utilisateur récupéré
         } catch (error) {
           set({
             error: error instanceof Error ? error.message : String(error),
             loading: false,
           });
+          throw error; // Propagation de l'erreur pour gestion ultérieure
         }
       },
 

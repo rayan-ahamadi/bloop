@@ -10,6 +10,7 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+
 type PostData = {
     ancestorThread?: any[];
     post: any;
@@ -241,7 +242,7 @@ export default function PostDetailsLayout({ PostData, onPostUpdate }: PostDetail
 
 
     if (!post) {
-        return <p>Chargement du post...</p>;
+        return <PostDetailLoading />;
     }
 
     return (

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PostDetailLoading() {
     return (
-        <div className="flex flex-col gap-4 bg-white w-full">
+        <div className="flex flex-col gap-4 bg-white md:w-[55%]">
             {/* Original Bloop Loading */}
             <div className="bloopscontent flex flex-row gap-4 items-start p-4">
                 <Skeleton className="w-[45px] h-[45px] rounded-md" />

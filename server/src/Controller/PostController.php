@@ -139,13 +139,13 @@ class PostController extends AbstractController
             $language = $request->request->get('language', 'fr');
             $imageFile = $request->files->get('image');
 
-            $this->logger->info('Données reçues depuis FormData: ' . json_encode([
+            $this->logger->info('Données reçues depuis FormData', [
                 'content' => $content,
                 'type' => $type,
                 'parent_post_id' => $parentPostId,
                 'language' => $language,
                 'image_file' => $imageFile ? $imageFile->getClientOriginalName() : null
-            ]));
+            ]);
 
             // Construction manuelle du DTO
             $createPostDto = new CreatePostDto();
@@ -192,14 +192,6 @@ class PostController extends AbstractController
             // Sauvegarde
             $this->postRepository->save($post, true);
 
-            if ($type === 'reply' && $parentPostId) {
-                $parentPost = $this->postRepository->find($parentPostId);
-                if ($parentPost) {
-                    $parentPost->incrementRepliesCount();
-                    $this->postRepository->save($parentPost, true);
-                }
-            }
-
             return $this->json(
                 [
                     'message' => 'Post créé avec succès',
@@ -212,7 +204,7 @@ class PostController extends AbstractController
                 ],
                 Response::HTTP_CREATED,
                 [],
-                ['groups' => ['post:read', 'user:read', 'user:list', 'post:list']]
+                ['groups' => ['post:read']]
             );
 
         } catch (\Exception $e) {
@@ -372,7 +364,7 @@ class PostController extends AbstractController
         $previousPost = $this->postRepository->findPreviousToPost($postEntity, $user ? $user : null);
 
         // Récupère les commentaires (réponses) du post
-        $postReplies = $this->postRepository->findRepliesToPost($postEntity, $page, $limit, $user ? $user : null);
+        $postReplies = $this->postRepository->findRepliesToPost($postEntity, $page, 10,$user ? $user : null);
 
         // Incrémenter le compteur de vues
         $postEntity->incrementViewsCount();
@@ -629,55 +621,20 @@ class PostController extends AbstractController
                 throw new AccessDeniedException('Vous n\'êtes pas autorisé à supprimer ce post');
             }
 
-            // Commencer une transaction ACID
-            $this->entityManager->beginTransaction();
+            // Soft delete
+            $post->softDelete();
+            $this->postRepository->save($post, true);
 
-            try {
-                // Supprimer les likes du post
-                $this->entityManager->createQuery(
-                    'DELETE FROM App\Entity\UserLikePost ul WHERE ul.post = :post'
-                )->setParameter('post', $post)->execute();
+            // Logging
+            $this->logger->info('Post supprimé', [
+                'post_id' => $post->getId(),
+                'user_id' => $user->getId()
+            ]);
 
-                // Supprimer les reposts du post
-                $this->entityManager->createQuery(
-                    'DELETE FROM App\Entity\UserRepost ur WHERE ur.post = :post'
-                )->setParameter('post', $post)->execute();
-
-                // Supprimer les signets/sauvegardes du post
-                $this->entityManager->createQuery(
-                    'DELETE FROM App\Entity\UserSavePost us WHERE us.post = :post'
-                )->setParameter('post', $post)->execute();
-
-                // Soft delete du post
-                $post->softDelete();
-                $this->postRepository->save($post, true);
-
-                // Si c'est une réponse, décrémenter le compteur du post parent
-                if ($post->getParentPost()) {
-                    $parentPost = $post->getParentPost();
-                    $parentPost->decrementRepliesCount();
-                    $this->postRepository->save($parentPost, true);
-                }
-
-                // Confirmer la transaction
-                $this->entityManager->commit();
-
-                // Logging
-                $this->logger->info('Post supprimé avec toutes ses relations', [
-                    'post_id' => $post->getId(),
-                    'user_id' => $user->getId()
-                ]);
-
-                return $this->json(
-                    ['message' => 'Post supprimé avec succès'],
-                    Response::HTTP_OK
-                );
-
-            } catch (\Exception $e) {
-                // Annuler la transaction en cas d'erreur
-                $this->entityManager->rollback();
-                throw $e;
-            }
+            return $this->json(
+                ['message' => 'Post supprimé avec succès'],
+                Response::HTTP_OK
+            );
 
         } catch (AccessDeniedException $e) {
             return $this->json(
@@ -685,7 +642,7 @@ class PostController extends AbstractController
                 Response::HTTP_FORBIDDEN
             );
         } catch (\Exception $e) {
-            $this->logger->error('Erreur inattendue lors de la suppression', [
+            $this->logger->error('Erreur inattendue', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

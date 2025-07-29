@@ -5,8 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/user.stores';
 import { usePostStore } from '@/stores/post.stores';
 import PostDetailsLayout from '@/components/page_parts/PostDetailsLayout';
-import PostDetailLoading from '@/components/page_parts/PostDetailLoading';
-
+import PostDetailLoading from "@/components/page_parts/PostDetailLoading";
 
 
 
@@ -55,20 +54,15 @@ export default function BloopDetail() {
         fetchPostDetails();
     }, [id]);
 
-    // Fonction pour mettre à jour les données du post (like, save, repost)
-    const updatePostData = (updatedData: typeof postData) => {
-        setPostData(updatedData);
-    };
 
-    // TODO : Faire un écran de chargement
-    if (!hasHydrated) return <PostDetailLoading />;
+    if (!hasHydrated) return <PostDetailLoading />; // Assure que le composant est hydraté avant de rendre quoi que ce soit
 
     // TODO : Remplacer par une modal qui propose à l'utilisateur de se connecter ou de s'inscrire
     // Et afficher le dashboard en mode visiteur
-    // if (!user) {
-    //     router.push("/");
-    //     return null;
-    // }
+    if (!user) {
+        router.push("/");
+        return null;
+    }
 
     if (loading || !postData) {
         return <PostDetailLoading />;
@@ -78,12 +72,9 @@ export default function BloopDetail() {
     return (
         <div className="flex flex-col items-center md:w-[55%] w-full">
             {postData ? (
-                <PostDetailsLayout
-                    PostData={postData}
-                    onPostUpdate={updatePostData}
-                />
+                <PostDetailsLayout PostData={postData} />
             ) : (
-                <p>Chargement du post...</p>
+                <p>Il n'y a rien ici..</p>
             )}
         </div >
     );

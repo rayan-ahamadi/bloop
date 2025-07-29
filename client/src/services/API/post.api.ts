@@ -3,36 +3,12 @@ import { Post } from "@/types/post.types"; // à adapter à ton type
 
 // 🟢 Créer un post
 export const createPost = async (postData: Partial<Post>) => {
-  console.log("Données avant FormData:", postData);
-
   const data = new FormData();
-
-  // Traiter chaque champ individuellement
   Object.entries(postData).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      if (key === "image" && value instanceof File) {
-        // Traitement spécial pour les fichiers
-        console.log(
-          `Ajout du fichier ${key}:`,
-          value.name,
-          value.size,
-          "bytes"
-        );
-        data.append("image", value);
-      } else if (typeof value === "string" || typeof value === "number") {
-        // Traitement pour les chaînes et nombres
-        console.log(`Ajout du champ ${key}:`, value);
-        data.append(key, String(value));
-      }
+    if (value !== undefined) {
+      data.append(key, value);
     }
   });
-
-  // Debug FormData
-  console.log("FormData créé:");
-  for (let [key, value] of data.entries()) {
-    console.log(`${key}:`, value);
-  }
-
   const response = await axios.post("/posts", data, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -70,22 +46,13 @@ export const getPost = async (id: number, page: number) => {
 };
 
 // ✏️ Modifier un post
-export const updatePost = async (id: number, postData: any) => {
+export const updatePost = async (id: number, data) => {
   const formData = new FormData();
-
-  // Traiter chaque champ individuellement
-  Object.entries(postData).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      if (key === "image" && value instanceof File) {
-        // Traitement spécial pour les fichiers
-        formData.append("image", value);
-      } else if (typeof value === "string" || typeof value === "number") {
-        // Traitement pour les chaînes et nombres
-        formData.append(key, String(value));
-      }
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined) {
+      formData.append(key, value);
     }
   });
-
   const response = await axios.put(`/posts/${id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",

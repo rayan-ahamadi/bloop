@@ -198,10 +198,10 @@ class UserController extends AbstractController
             );
         }
 
-        // Récupérer les posts, reposts et likes de l'utilisateur
-        $usersPosts = $user->getPosts();      // Supposé: relation User->posts
-        $usersReposts = $user->getReposts();  // Supposé: relation User->reposts
-        $usersLikes = $user->getLikes(); // Supposé: relation User->likedPosts
+        // Récupérer les posts, reposts et likes de l'utilisateur connecté
+        $usersPosts = $user->getPosts();      
+        $usersReposts = $user->getReposts()->map(fn($repost) => $repost->getPost())->toArray();
+        $usersLikes = $user->getLikes()->map(fn($like) => $like->getPost())->toArray();
 
         // Préparer les données à envoyer
         $userData = [
@@ -215,7 +215,7 @@ class UserController extends AbstractController
             $userData,
             Response::HTTP_OK,
             [],
-            ['groups' => ['user:read']]
+            ['groups' => ['user:read', 'post:read', 'repost:read', 'like:read']]
         );
     }
 

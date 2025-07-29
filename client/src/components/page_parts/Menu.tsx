@@ -14,7 +14,7 @@ const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: 
         { href: "/dashboard/explore", label: "Explorer", icon: "/images/icons/search.svg", active: false },
         { href: "/dashboard/notifications", label: "Notifications", icon: "/images/icons/bell.svg", active: false },
         { href: "/dashboard/messages", label: "Messages", icon: "/images/icons/email.svg", active: false },
-        { href: "/dashboard/profile", label: "Profil", icon: "/images/icons/profile.svg", active: false },
+        { href: "/dashboard/profile/" + user?.id, label: "Profil", icon: "/images/icons/profile.svg", active: false },
         { href: "/dashboard/settings", label: "Paramètres", icon: "/images/icons/settings.svg", active: false },
     ]
 

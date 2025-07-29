@@ -90,18 +90,23 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     private Collection $posts;
 
     #[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class)]
+    #[Groups(['user:read'])]
     private Collection $following;
 
     #[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class)]
+    #[Groups(['user:read'])]
     private Collection $followers;
 
-    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserLikePost::class)]
+    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserLikePost::class, cascade: ['persist', 'remove'])]
+    #[Groups(['like:read', 'post:read'])]
     private Collection $likes;
 
-    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserRepost::class)]
+    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserRepost::class, cascade: ['persist', 'remove'])]
+    #[Groups(['repost:read', 'post:read'])]
     private Collection $reposts;
 
-    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserSavePost::class)]
+    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: UserSavePost::class, cascade: ['persist', 'remove'])]
+    #[Groups(['save:read', 'post:read'])]
     private Collection $savedPosts;
 
 
@@ -140,6 +145,9 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
         $this->posts = new ArrayCollection();
         $this->following = new ArrayCollection();
         $this->followers = new ArrayCollection();
+        $this->likes = new ArrayCollection();
+        $this->reposts = new ArrayCollection();
+        $this->savedPosts = new ArrayCollection();
     }
 
     public function getId(): ?int

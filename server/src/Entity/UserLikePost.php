@@ -23,7 +23,7 @@ class UserLikePost
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'likes')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['like:read'])]
+    #[Groups(['like:read', 'post:read'])]
     private Post $post;
 
     #[ORM\Column]

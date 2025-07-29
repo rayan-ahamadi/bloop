@@ -22,6 +22,7 @@ import BloopDropdown from "./BloopDropdown";
 interface BloopContent {
     post: {
         id?: number;
+        type?: string;
         user?: Partial<User>;
         createdAt?: string | Date;
         content?: string;
@@ -35,6 +36,7 @@ interface BloopContent {
         hasLiked?: boolean;
         hasReposted?: boolean;
         hasSaved?: boolean;
+        parentPost?: BloopContent | null; // Pour les reposts, si c'est un repost, il peut avoir un parent post
     };
     hasLiked?: boolean;
     hasReposted?: boolean;
@@ -74,6 +76,8 @@ export default function Bloop(
         saved: bloopContent?.hasSaved || false,
         hasLiked: bloopContent?.hasLiked || false,
         hasReposted: bloopContent?.hasReposted || false,
+        type: bloopContent?.post?.type || "text",
+        parentPostUser: bloopContent?.post?.parentPost?.user.username || "Unknown",
     });
 
     const {
@@ -89,6 +93,8 @@ export default function Bloop(
         saved,
         hasLiked,
         hasReposted,
+        type,
+        parentPostUser
     } = bloopState;
 
     // Calcule le le temps écoulé depuis la publication du bloop. 
@@ -115,6 +121,13 @@ export default function Bloop(
 
     return (
         <div className="flex flex-col p-4 bg-secondary cursor-pointer hover:bg-secondary/30 shadow-md w-full ">
+            {type === "reply" && (
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-secondary-dark/60 text-sm">
+                        En réponse à <b>@{parentPostUser}</b>
+                    </span>
+                </div>
+            )}
             <div className="bloopscontent flex flex-row gap-4 items-start">
                 <Image
                     src={profilePicture}
@@ -151,7 +164,7 @@ export default function Bloop(
                                 alt="Bloop Image"
                                 width={500}
                                 height={300}
-                                className="mt-2 rounded-md shadow-[4px_4px_0_0_black]"
+                                className="border-2 border-secondary-dark mt-2 rounded-md shadow-[4px_4px_0_0_black]"
                             />
                         )}
                     </div>
