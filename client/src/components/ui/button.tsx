@@ -19,6 +19,8 @@ const buttonVariants = cva(
           "bg-secondary cursor-pointer text-secondary-dark hover:bg-secondary/80 w-full border-2 border-secondary-dark text-secondary-dark font-bold",
         accent:
           "bg-accent cursor-pointer text-secondary-dark shadow-xs hover:bg-accent/80 w-full border-2 border-secondary-dark text-secondary-dark shadow-[4px_4px_0_0_black] font-bold",
+        switchButton:
+          "bg-secondary cursor-pointer text-secondary-dark hover:bg-secondary/80 w-full border-b-2 border-secondary-dark text-secondary-dark font-bold rounded-none text-lg",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",

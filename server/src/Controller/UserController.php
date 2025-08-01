@@ -6,6 +6,7 @@ use App\Validation\User\CreateUserDto;
 use App\Entity\User;
 use App\Event\UserCreatedEvent;
 use App\Repository\UserRepository;
+use App\Repository\PostRepository;
 use App\Service\PasswordHasher;
 use App\Validation\User\UserValidator;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -32,6 +33,7 @@ class UserController extends AbstractController
         private readonly SerializerInterface $serializer,
         private readonly ValidatorInterface $validator,
         private readonly UserRepository $userRepository,
+        private readonly PostRepository $postRepository,
         private readonly PasswordHasher $passwordHasher,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger,
@@ -198,10 +200,12 @@ class UserController extends AbstractController
             );
         }
 
+        $loggedUser = $this->getUser();
+
         // Récupérer les posts, reposts et likes de l'utilisateur connecté
-        $usersPosts = $user->getPosts();      
-        $usersReposts = $user->getReposts()->map(fn($repost) => $repost->getPost())->toArray();
-        $usersLikes = $user->getLikes()->map(fn($like) => $like->getPost())->toArray();
+        $usersPosts = $this->postRepository->findUsersPostWithUserDetails($user, $loggedUser);     
+        $usersReposts = $this->postRepository->findUsersRepostsWithUserDetails($user, $loggedUser);
+        $usersLikes = $this->postRepository->findUsersLikesWithUserDetails($user, $loggedUser);
 
         // Préparer les données à envoyer
         $userData = [

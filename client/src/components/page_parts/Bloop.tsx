@@ -49,6 +49,7 @@ interface BloopProps {
     onRepost: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
     onSave: (postId: number, bloopState: any, setBloopState: (state: any) => void) => void;
     onDelete: (bloopId: number) => void;
+    isRepost?: boolean; // Indique si c'est un repost
 }
 
 export default function Bloop(
@@ -57,7 +58,8 @@ export default function Bloop(
         onLike,
         onRepost,
         onSave,
-        onDelete
+        onDelete,
+        isRepost = false, // Par défaut, ce n'est pas un repost
     }: BloopProps,
 ) {
     const user = bloopContent?.post?.user || {};
@@ -125,6 +127,13 @@ export default function Bloop(
                 <div className="flex items-center gap-2 mb-2">
                     <span className="text-secondary-dark/60 text-sm">
                         En réponse à <b>@{parentPostUser}</b>
+                    </span>
+                </div>
+            )}
+            {isRepost && (
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-secondary-dark/60 text-sm">
+                        Reposté par <b>@{username}</b>
                     </span>
                 </div>
             )}

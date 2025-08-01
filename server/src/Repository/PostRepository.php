@@ -89,6 +89,201 @@ class PostRepository extends ServiceEntityRepository
         return null; // Aucun post trouvé
     }
 
+    public function findUsersPostWithUserDetails(User $author, User $loggedUser) {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.user', 'u')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('l.user_id', 'lu')
+            ->leftJoin('p.reposts', 'r')
+            ->leftJoin('r.user_id', 'ru')
+            ->addSelect('u')
+            ->addSelect('l')
+            ->addSelect('lu')
+            ->addSelect('r')
+            ->addSelect('ru')
+            ->where('p.user = :author')
+            ->andWhere('p.deletedAt IS NULL')
+            ->leftJoin('p.parentPost', 'pp')
+            ->leftJoin('pp.user', 'ppu')
+            ->addSelect('pp')
+            ->addSelect('ppu')
+            ->setParameter('author', $author)
+            ->orderBy('p.createdAt', 'DESC');
+
+        if ($loggedUser) {
+            $qb->addSelect(
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserLikePost ulp WHERE ulp.post = p AND ulp.user_id = :user_id) THEN true ELSE false END) AS hasLiked',
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserRepost ur WHERE ur.post = p AND ur.user_id = :user_id) THEN true ELSE false END) AS hasReposted',
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserSavePost usp WHERE usp.post = p AND usp.user_id = :user_id) THEN true ELSE false END) AS hasSaved'
+            )
+            ->setParameter('user_id', $loggedUser->getId());
+        }
+
+        // Restructurer les résultats pour intégrer les colonnes calculées
+        $posts = $qb->getQuery()->getResult(Query::HYDRATE_ARRAY);
+        if ($loggedUser) {
+            $posts = array_map(function ($post) {
+                if (is_array($post)) {
+                    // Si c'est un tableau (avec colonnes calculées)
+                    $postData = $post[0]; // L'objet principal
+                    return [
+                        'post' => $postData,
+                        'hasLiked' => $post['hasLiked'] ?? false,
+                        'hasReposted' => $post['hasReposted'] ?? false,
+                        'hasSaved' => $post['hasSaved'] ?? false
+                    ];
+                } else {
+                    // Si c'est directement un objet Post
+                    return [
+                        'post' => $post,
+                        'hasLiked' => false,
+                        'hasReposted' => false,
+                        'hasSaved' => false
+                    ];
+                }
+            }, $posts);
+        }
+        return $posts;
+        
+    }
+
+    /**
+     * Trouve les reposts d'un utilisateur avec les détails
+     */
+    public function findUsersRepostsWithUserDetails(User $user, ?User $loggedUser = null): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.user', 'u')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('l.user_id', 'lu')
+            ->leftJoin('p.reposts', 'r')
+            ->leftJoin('r.user_id', 'ru')
+            ->leftJoin('p.parentPost', 'pp')
+            ->leftJoin('pp.user', 'ppu')
+            ->innerJoin('App\Entity\UserRepost', 'ur', 'WITH', 'ur.post = p AND ur.user_id = :user_id')
+            ->addSelect('u')
+            ->addSelect('l')
+            ->addSelect('lu')
+            ->addSelect('r')
+            ->addSelect('ru')
+            ->addSelect('pp')
+            ->addSelect('ppu')
+            ->where('p.deletedAt IS NULL')
+            ->setParameter('user_id', $user->getId())
+            ->orderBy('ur.reposted_at', 'DESC');
+
+        if ($loggedUser) {
+            $qb->addSelect(
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserLikePost ulp WHERE ulp.post = p AND ulp.user_id = :logged_user_id) THEN true ELSE false END) AS hasLiked',
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserRepost ur2 WHERE ur2.post = p AND ur2.user_id = :logged_user_id) THEN true ELSE false END) AS hasReposted',
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserSavePost usp WHERE usp.post = p AND usp.user_id = :logged_user_id) THEN true ELSE false END) AS hasSaved'
+            )
+            ->setParameter('logged_user_id', $loggedUser->getId());
+        }
+
+        $posts = $qb->getQuery()->getResult(Query::HYDRATE_ARRAY);
+
+        if ($loggedUser) {
+            $posts = array_map(function ($post) use ($loggedUser) {
+                if (is_array($post)) {
+                    $postData = $post[0];
+                    return [
+                        'post' => $postData,
+                        'hasLiked' => $post['hasLiked'] ?? false,
+                        'hasReposted' => $post['hasReposted'] ?? false,
+                        'hasSaved' => $post['hasSaved'] ?? false,
+                        'repostedAt' => $this->getRepostedAtForUser($postData['id'], $loggedUser)
+                    ];
+                } else {
+                    return [
+                        'post' => $post,
+                        'hasLiked' => false,
+                        'hasReposted' => false,
+                        'hasSaved' => false
+                    ];
+                }
+            }, $posts);
+        }
+
+        return $posts;
+    }
+
+    public function getRepostedAtForUser(int $post_id, User $user): ?\DateTimeInterface
+    {
+
+        $post = $this->getEntityManager()->getRepository(Post::class)
+            ->find($post_id);
+
+        if (!$post) {
+            return null; // Post non trouvé
+        }
+
+        $repost = $this->getEntityManager()->getRepository('App\Entity\UserRepost')
+            ->findOneBy(['post' => $post, 'user_id' => $user]);
+
+        return $repost ? $repost->getRepostedAt() : null;
+    }
+
+    /**
+     * Trouve les likes d'un utilisateur avec les détails
+     */
+    public function findUsersLikesWithUserDetails(User $user, ?User $loggedUser = null): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.user', 'u')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('l.user_id', 'lu')
+            ->leftJoin('p.reposts', 'r')
+            ->leftJoin('r.user_id', 'ru')
+            ->leftJoin('p.parentPost', 'pp')
+            ->leftJoin('pp.user', 'ppu')
+            ->innerJoin('App\Entity\UserLikePost', 'ulp', 'WITH', 'ulp.post = p AND ulp.user_id = :user_id')
+            ->addSelect('u')
+            ->addSelect('l')
+            ->addSelect('lu')
+            ->addSelect('r')
+            ->addSelect('ru')
+            ->addSelect('pp')
+            ->addSelect('ppu')
+            ->where('p.deletedAt IS NULL')
+            ->setParameter('user_id', $user->getId())
+            ->orderBy('ulp.liked_at', 'DESC');
+
+        if ($loggedUser) {
+            $qb->addSelect(
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserLikePost ulp2 WHERE ulp2.post = p AND ulp2.user_id = :logged_user_id) THEN true ELSE false END) AS hasLiked',
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserRepost ur WHERE ur.post = p AND ur.user_id = :logged_user_id) THEN true ELSE false END) AS hasReposted',
+                '(CASE WHEN EXISTS (SELECT 1 FROM App\Entity\UserSavePost usp WHERE usp.post = p AND usp.user_id = :logged_user_id) THEN true ELSE false END) AS hasSaved'
+            )
+            ->setParameter('logged_user_id', $loggedUser->getId());
+        }
+
+        $posts = $qb->getQuery()->getResult(Query::HYDRATE_ARRAY);
+
+        if ($loggedUser) {
+            $posts = array_map(function ($post) {
+                if (is_array($post)) {
+                    $postData = $post[0];
+                    return [
+                        'post' => $postData,
+                        'hasLiked' => $post['hasLiked'] ?? false,
+                        'hasReposted' => $post['hasReposted'] ?? false,
+                        'hasSaved' => $post['hasSaved'] ?? false
+                    ];
+                } else {
+                    return [
+                        'post' => $post,
+                        'hasLiked' => false,
+                        'hasReposted' => false,
+                        'hasSaved' => false
+                    ];
+                }
+            }, $posts);
+        }
+
+        return $posts;
+    }
+
     /**
      * Trouve les posts paginés avec filtres
      */

@@ -6,16 +6,19 @@ import { forwardRef } from "react";
 import { useUserStore } from "@/stores/user.stores";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 const Menu = forwardRef<HTMLDivElement, { className?: string, displayMenu?: (e: React.MouseEvent<HTMLDivElement>) => void, menuOpen?: boolean }>((props, ref) => {
     const { user, getProfile } = useUserStore();
+    const activePage = usePathname();
+
     const links = [
-        { href: "/dashboard", label: "Accueil", icon: "/images/icons/home.svg", active: true },
-        { href: "/dashboard/explore", label: "Explorer", icon: "/images/icons/search.svg", active: false },
-        { href: "/dashboard/notifications", label: "Notifications", icon: "/images/icons/bell.svg", active: false },
-        { href: "/dashboard/messages", label: "Messages", icon: "/images/icons/email.svg", active: false },
-        { href: "/dashboard/profile/" + user?.id, label: "Profil", icon: "/images/icons/profile.svg", active: false },
-        { href: "/dashboard/settings", label: "Paramètres", icon: "/images/icons/settings.svg", active: false },
+        { href: "/dashboard", label: "Accueil", icon: "/images/icons/home.svg", active: activePage === "/dashboard" ? true : false },
+        { href: "/dashboard/explore", label: "Explorer", icon: "/images/icons/search.svg", active: activePage === "/dashboard/explore" ? true : false },
+        { href: "/dashboard/notifications", label: "Notifications", icon: "/images/icons/bell.svg", active: activePage === "/dashboard/notifications" ? true : false },
+        { href: "/dashboard/messages", label: "Messages", icon: "/images/icons/email.svg", active: activePage === "/dashboard/messages" ? true : false },
+        { href: "/dashboard/profile/" + user?.id, label: "Profil", icon: "/images/icons/profile.svg", active: activePage === "/dashboard/profile/" + user?.id ? true : false },
+        { href: "/dashboard/settings", label: "Paramètres", icon: "/images/icons/settings.svg", active: activePage === "/dashboard/settings" ? true : false },
     ]
 
     const userData = {
