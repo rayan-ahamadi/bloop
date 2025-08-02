@@ -10,6 +10,7 @@ export default function DashboardLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+
     return (
         <main className="flex flex-col h-screen max-h-screen overflow-y-hidden">
             <Header />

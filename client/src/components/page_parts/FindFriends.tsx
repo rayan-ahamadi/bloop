@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { forwardRef } from "react";
 import Email from "@/components/icons/email.svg";
+import MessageLayout from "@/components/page_parts/MessagesLayout";
+import { useMessageStore } from "@/stores/messages.store";
+import { set } from "zod";
+
 
 const FindFriends = forwardRef<HTMLDivElement, { className?: string }>(({ className }, ref) => {
 
@@ -36,6 +40,11 @@ const FindFriends = forwardRef<HTMLDivElement, { className?: string }>(({ classN
             handle: "@ericm",
         },
     ];
+
+    const {
+        displayMessageLayout,
+        setDisplayMessageLayout
+    } = useMessageStore()
 
     return (
         <div className={"flex flex-col justify-between items-center w-full md:h-[93vh] md:w-[30vw] bg-secondary border-secondary-dark md:border-l-4 " + className}  >
@@ -73,11 +82,14 @@ const FindFriends = forwardRef<HTMLDivElement, { className?: string }>(({ classN
                 </div>
             </div>
             <div className="message-container flex flex-col justify-end p-4 w-3/5 mb-6">
-                <Button>
+                <Button onClick={() => setDisplayMessageLayout(!displayMessageLayout)}>
                     <Email className="flex flex-row justify-center items-center size-max" />
                     <span className="text-[22px]">Messages</span>
                 </Button>
             </div>
+            {
+                displayMessageLayout && <MessageLayout />
+            }
         </div>
     );
 }
