@@ -115,6 +115,13 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     #[Groups(['user:read'])]
     private string $status = UserStatus::ACTIVE;
 
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: RoomMessage::class)]
+    private Collection $messages;
+
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: RoomParticipant::class)]
+    private Collection $roomParticipations;
+
+
     // #[ORM\Column(type: 'boolean', options: ['default' => false])]
     // #[Groups(['user:read'])]
     // private bool $isVerified = false;
@@ -148,6 +155,8 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
         $this->likes = new ArrayCollection();
         $this->reposts = new ArrayCollection();
         $this->savedPosts = new ArrayCollection();
+        $this->messages = new ArrayCollection();
+        $this->roomParticipations = new ArrayCollection();
     }
 
     public function getId(): ?int

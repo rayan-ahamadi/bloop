@@ -1,71 +1,115 @@
-import { User } from "@/types/user.types";
+import { RoomWithLastMessage } from "@/types/chat.types";
 import { useMessageStore } from "@/stores/messages.store";
 import { useUserStore } from "@/stores/user.stores";
 import Image from "next/image";
 
 type RoomProps = {
-    roomData: {
-        id: number;
-        name: string;
-        avatarUrl: string;
-        type: string;
-        user: User | null;
-        lastMessage?: string;
-        lastMessageSender?: User | null;
-        sendAt?: string;
-        read?: boolean;
-    };
+    roomData: RoomWithLastMessage;
 };
 
 export default function Room({ roomData }: RoomProps) {
-    const {
-        enterRoom,
-    } = useMessageStore();
-    const { user } = useUserStore();
+    const { enterRoom } = useMessageStore();
+    const { user: currentUser } = useUserStore();
 
-    const handleEnterRoom = () => {
-        enterRoom(roomData.name);
+    // Déterminer le nom et l'avatar à afficher
+    const getRoomDisplay = () => {
+        const { room } = roomData;
+
+        if (room.type === 'DM') {
+            // Pour un DM, afficher l'autre participant
+            const otherParticipant = room.participants.find(
+                p => p.user.id !== currentUser?.id
+            );
+
+            return {
+                name: otherParticipant?.user.name || 'Utilisateur inconnu',
+                avatarUrl: otherParticipant?.user.avatarUrl || '/default-avatar.png'
+            };
+        } else {
+            // Pour un groupe, utiliser le nom de la room
+            return {
+                name: room.name || 'Groupe sans nom',
+                avatarUrl: '/default-group-avatar.png'
+            };
+        }
+    };
+
+    const handleRoomClick = () => {
+        enterRoom(roomData.room.id);
+    };
+
+    const { name, avatarUrl } = getRoomDisplay();
+    const { last_message, unread_count } = roomData;
+
+    const formatLastMessageTime = (dateString?: string) => {
+        if (!dateString) return '';
+
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+        if (diffInHours < 24) {
+            return date.toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } else {
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit'
+            });
+        }
     };
 
     return (
-        <div className="w-full border-2 border-secondary-dark hover:bg-secondary-dark/20 p-4 cursor-pointer" onClick={handleEnterRoom}>
-            <div className="flex items-start gap-2">
-                {roomData.type === "group" ? (
+        <div
+            className="room-item p-3 border-b border-secondary-dark cursor-pointer hover:bg-secondary-light transition-colors"
+            onClick={handleRoomClick}
+        >
+            <div className="flex items-center space-x-3">
+                <div className="relative">
                     <Image
-                        src={roomData.avatarUrl}
-                        alt={`${roomData.name} Avatar`}
-                        width={40}
-                        height={40}
-                        className=" rounded-full border-2 border-secondary-dark"
-                    />
-                ) : (
-                    <Image
-                        src={roomData?.user?.avatarUrl || "/default-avatar.png"}
-                        alt={`${roomData?.user?.name} Avatar`}
-                        width={40}
-                        height={40}
+                        src={avatarUrl}
+                        alt={name}
+                        width={48}
+                        height={48}
                         className="rounded-full border-2 border-secondary-dark"
                     />
-                )}
+                    {unread_count > 0 && (
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {unread_count > 9 ? '9+' : unread_count}
+                        </div>
+                    )}
+                </div>
 
-                <div className="flex flex-col items-start">
-                    {roomData.type === "group" ? (
-                        <p className="font-bold">{roomData.name} • {roomData.sendAt}</p>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg truncate">{name}</h3>
+                        {last_message && (
+                            <span className="text-sm text-gray-500">
+                                {formatLastMessageTime(last_message.sentAt)}
+                            </span>
+                        )}
+                    </div>
 
-                    ) : (
-                        <p>
-                            <span className="font-bold">{roomData?.user?.name} </span>
-                            <span className="font-medium text-secondary-dark/70">@{roomData?.user?.username}</span>
-                            <span className="text-secondary-dark/70"> • {roomData.sendAt}</span>
-                        </p>
+                    {last_message && (
+                        <div className="flex items-center space-x-1">
+                            <span className="text-sm text-gray-600 font-medium">
+                                {last_message.user.name}:
+                            </span>
+                            <p className="text-sm text-gray-600 truncate">
+                                {last_message.image ? '📷 Image' : last_message.content}
+                            </p>
+                        </div>
                     )}
 
-                    <p className="text-secondary-dark/70 {roomData.read ? 'font-normal' : 'font-bold'}">
-                        {roomData.type === "group" ? `${roomData.lastMessageSender?.name || "Quelqu'un"}: ` : ""}
-                        {roomData.lastMessage || "Aucun message"}
-                    </p>
+                    {!last_message && (
+                        <p className="text-sm text-gray-500 italic">
+                            Aucun message
+                        </p>
+                    )}
                 </div>
             </div>
         </div>
-    )
+    );
 }
