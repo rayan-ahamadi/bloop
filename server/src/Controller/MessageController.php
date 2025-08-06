@@ -26,6 +26,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Psr\Log\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/api/message')]
 final class MessageController extends AbstractController
@@ -218,17 +220,17 @@ final class MessageController extends AbstractController
             /** @var User $user */
             $user = $this->getUser();
             if (!$user) {
-                return $this->json(['error' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
             }
 
             $room = $this->chatRoomRepository->find($id);
             if (!$room) {
-                return $this->json(['error' => 'Room non trouvée'], Response::HTTP_NOT_FOUND);
+            return $this->json(['error' => 'Room non trouvée'], Response::HTTP_NOT_FOUND);
             }
 
             // Vérifier si l'utilisateur est participant
             if (!$this->roomParticipantRepository->isUserParticipant($room, $user)) {
-                return $this->json(['error' => 'Accès non autorisé à cette room'], Response::HTTP_FORBIDDEN);
+            return $this->json(['error' => 'Accès non autorisé à cette room'], Response::HTTP_FORBIDDEN);
             }
 
             $content = $request->getContent();
@@ -237,10 +239,10 @@ final class MessageController extends AbstractController
             // Validation du DTO
             $errors = $this->validator->validate($createMessageDto);
             if (count($errors) > 0) {
-                return $this->json(
-                    ['errors' => $this->formatValidationErrors($errors)],
-                    Response::HTTP_BAD_REQUEST
-                );
+            return $this->json(
+                ['errors' => $this->formatValidationErrors($errors)],
+                Response::HTTP_BAD_REQUEST
+            );
             }
 
             // Créer le message
@@ -248,6 +250,8 @@ final class MessageController extends AbstractController
             $message->setUser($user);
             $message->setRoom($room);
             $message->setContent($createMessageDto->getContent());
+            
+            // Si une image est présente, elle doit être une URL (string)
             if ($createMessageDto->getImage()) {
                 $message->setImage($createMessageDto->getImage());
             }
@@ -390,6 +394,37 @@ final class MessageController extends AbstractController
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
+    }
+
+    #[Route('/upload-image', name: 'upload_message_image', methods: ['POST'])]
+    public function uploadMessageImage(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        /** @var UploadedFile|null $file */
+        $file = $request->files->get('image');
+        if (!$file) {
+            return $this->json(['error' => 'Aucun fichier envoyé'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $uploadDir = $this->getParameter('message_image_directory'); // Configure dans services.yaml ou parameters.yaml
+        $publicPath = '/uploads/messages/';
+
+        $filename = uniqid('message_image_') . '.' . $file->guessExtension();
+
+        try {
+            $file->move($uploadDir, $filename);
+        } catch (FileException $e) {
+            return $this->json(['error' => 'Erreur lors de l\'upload'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        $imageUrl = $publicPath . $filename;
+
+        return $this->json(['url' => $imageUrl], Response::HTTP_OK);
     }
 
     private function formatValidationErrors($errors): array

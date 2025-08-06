@@ -21,9 +21,9 @@ class ChatRoom
     #[Groups(['room:read'])]
     private int $id;
 
-    #[ORM\Column(type: "string", unique: true)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true, unique: true)]
     #[Groups(['room:read'])]
-    private string $identifier;
+    private ?string $identifier = null; 
 
     #[ORM\Column(type: "string", enumType: ChatRoomType::class)]
     #[Groups(['room:read'])]
@@ -66,6 +66,32 @@ class ChatRoom
     {
         $this->identifier = $identifier;
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function generateIdentifier(): void
+    {
+        if (!$this->identifier) {
+            if ($this->type === ChatRoomType::DM) {
+                // Pour DM : "dm_{user1_id}_{user2_id}" (toujours dans l'ordre croissant)
+                $participants = $this->getParticipants()->toArray();
+                if (count($participants) === 2) {
+                    $ids = array_map(fn($p) => $p->getUser()->getId(), $participants);
+                    sort($ids); // Ordre croissant pour cohérence
+                    $this->identifier = "dm_" . implode('_', $ids);
+                } else {
+                    $this->identifier = "dm_" . uniqid();
+                }
+            } else {
+                // Pour groupes : "group_{nom_sanitize}" ou "group_{unique_id}"
+                if ($this->name) {
+                    $sanitized = preg_replace('/[^a-zA-Z0-9_]/', '_', strtolower($this->name));
+                    $this->identifier = "group_" . $sanitized . "_" . substr(uniqid(), -6);
+                } else {
+                    $this->identifier = "group_" . uniqid();
+                }
+            }
+        }
     }
 
     public function getType(): ChatRoomType
