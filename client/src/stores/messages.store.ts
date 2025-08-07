@@ -227,6 +227,24 @@ export const useMessageStore = create<messageState>()(
       createDirectMessage: async (userId: number) => {
         set({ loading: true, error: null });
         try {
+          // Vérifier d'abord si une DM existe déjà avec cet utilisateur
+          const { roomList } = get();
+          const existingDM = roomList.find(
+            (room) =>
+              room.room.type === "DM" &&
+              room.room.participants.some(
+                (participant) => participant.user.id === userId
+              )
+          );
+
+          if (existingDM) {
+            // Si une DM existe déjà, entrer directement dans cette room
+            await get().enterRoom(existingDM.room.identifier);
+            set({ loading: false });
+            return;
+          }
+
+          // Sinon, créer une nouvelle DM
           const socket = useUserStore.getState().socket;
           if (!socket) throw new Error("Socket non initialisé");
           socket.emit("create_dm", { targetUserId: userId });
