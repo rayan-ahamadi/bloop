@@ -4,8 +4,14 @@ import { useMessageStore } from "@/stores/messages.store"
 import { useEffect } from "react";
 import ArrowLeft from "@/components/icons/arrow-left.svg"
 import Close from "@/components/icons/close.svg"
+import ImageIcon from "@/components/icons/image-icon.svg"
+import PaperPlane from "@/components/icons/paperPlane.svg"
 import Image from "next/image"
 import Room from "./Room"
+import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
+
+
 
 // Composants pour les messages en desktop
 export default function MessageLayout() {
@@ -38,14 +44,16 @@ export default function MessageLayout() {
                             <ArrowLeft className="w-6 h-6 cursor-pointer" onClick={() => leaveRoom()} />
                             {roomAvatar && (
                                 <Image
-                                    src={roomAvatar}
+                                    src={"https://localhost:8000" + roomAvatar}
                                     alt="Room Avatar"
                                     width={32}
                                     height={32}
-                                    className="rounded-full border-2 border-secondary-dark ml-2"
+                                    className="rounded-md border-2 border-secondary-dark ml-2"
                                 />
                             )}
-                            <span className="font-bold text-2xl ml-2">{roomName}</span>
+                            <p className="font-bold text-2xl ml-2">
+                                {roomName}
+                            </p>
                         </div>
                     ) : (
                         <span className="font-bold text-2xl">Messages</span>
@@ -56,7 +64,7 @@ export default function MessageLayout() {
                 </div>
             </div>
 
-            <div className="layout-content overflow-y-scroll h-full">
+            <div className="layout-content overflow-y-scroll flex flex-col justify-between h-[85%]">
                 {loading && (
                     <div className="loading p-4 text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -71,20 +79,20 @@ export default function MessageLayout() {
                 )}
 
                 {!loading && !error && roomID && roomMessageList.length === 0 && (
-                    <div className="no-messages p-4 text-center text-gray-500">
+                    <div className="no-messages p-4 text-center text-gray-500 flex-grow-1">
                         Aucun message dans cette conversation.
                     </div>
                 )}
 
                 {!loading && !error && !roomID && roomList.length === 0 && (
-                    <div className="no-rooms p-4 text-center text-gray-500">
+                    <div className="no-rooms p-4 text-center text-gray-500 flex-grow-1">
                         Aucune conversation trouvée.
                     </div>
                 )}
 
                 {/* Affichage des messages */}
                 {roomID && roomMessageList.length > 0 && (
-                    <div className="messages-list p-4 space-y-4">
+                    <div className="messages-list p-4 space-y-4 flex-grow-1 overflow-y-auto">
                         {roomMessageList.map((message) => (
                             <div key={message.id} className="message-item">
                                 <div className="flex items-start space-x-3">
@@ -122,15 +130,38 @@ export default function MessageLayout() {
                     </div>
                 )}
 
-                {/* Affichage de la liste des conversations */}
-                {!roomID && roomList.length > 0 && (
-                    <div className="rooms-list">
-                        {roomList.map((room) => (
-                            <Room roomData={room} key={room.room.id} />
-                        ))}
+                {/* Affichage de l'input d'envoi de message */}
+                {roomID && (
+                    <div className="message-input p-2 border-t-2 border-secondary-dark flex items-center justify-around gap-4">
+                        <ImageIcon className="h-6 cursor-pointer" />
+                        <Form >
+                            <Textarea
+                                placeholder="Écrire un message..."
+                                className="w-auto flex-grow-1 align-middle"
+                                rows={2}
+                                onChange={(e) => useMessageStore.getState().setMessageContent(e.target.value)}
+                            />
+                        </Form>
+                        <button
+                            className="send-button  text-white p-2 rounded-md hover:bg-primary-dark transition-colors"
+                            onClick={() => useMessageStore.getState().sendMessage(roomID, useMessageStore.getState().messageContent)}
+                        >
+                            <PaperPlane className="h-6" />
+                        </button>
                     </div>
                 )}
-            </div>
-        </div>
+
+                {/* Affichage de la liste des conversations */}
+                {
+                    !roomID && roomList.length > 0 && (
+                        <div className="rooms-list">
+                            {roomList.map((room) => (
+                                <Room roomData={room} key={room.room.id} />
+                            ))}
+                        </div>
+                    )
+                }
+            </div >
+        </div >
     )
 }

@@ -28,8 +28,7 @@
       "@/services/*": ["./src/services/*"],
       "@/types/*": ["./src/types/*"],
       "@/utils/*": ["./src/utils/*"],
-      "@/assets/*": ["./public/*"],
-      "@/API/*": ["src/services/API/*"]
+      "@/assets/*": ["./public/*"]
     }
   },
   "include": [

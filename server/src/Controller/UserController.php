@@ -47,8 +47,11 @@ class UserController extends AbstractController
     {
         try {
             $username = $request->request->get('username');
+            $name = $request->request->get('name');
             $email = $request->request->get('email');
             $password = $request->request->get('password');
+            $bio = $request->request->get('bio');
+            $birthDate = $request->request->get('birthDate');
     
             // Fichiers image
             /** @var UploadedFile|null $avatarFile */
@@ -61,6 +64,10 @@ class UserController extends AbstractController
             $user = new User();
             $user->setUsername($username);
             $user->setEmail($email);
+            $user->setBio($bio);
+            $user->setBirthDate(new \DateTime($birthDate));
+            $user->setName($name);
+            
     
             // Hash du mot de passe
             $hashedPassword = $this->passwordHasher->hashPassword($user, $password);

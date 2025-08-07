@@ -72,7 +72,7 @@ final class MessageController extends AbstractController
             $roomsData,
             Response::HTTP_OK,
             [],
-            ['groups' => ['room:read', 'message:read', 'user:read']]
+            ['groups' => ['room:read', 'message:read', 'user:read', 'participant:read']]
         );
     }
 

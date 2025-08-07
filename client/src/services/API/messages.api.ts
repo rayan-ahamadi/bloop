@@ -135,3 +135,25 @@ export const createGroup = async (
     participant_ids: participantIds,
   });
 };
+
+/**
+ * Upload une image pour un message
+ */
+export const uploadMessageImage = async (
+  imageFile: File
+): Promise<{ url: string }> => {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    const response = await axios.post("/upload-image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de l'upload de l'image:", error);
+    throw error;
+  }
+};

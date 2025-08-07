@@ -38,10 +38,15 @@ class ChatRoomRepository extends ServiceEntityRepository
     public function findRoomsForUser(User $user): array
     {
         return $this->createQueryBuilder('cr')
-            ->innerJoin('cr.participants', 'p')
+            ->leftJoin('cr.participants', 'p')
             ->leftJoin('cr.messages', 'm')
             ->addSelect('p', 'm')
-            ->where('p.user = :user')
+            ->where('cr.id IN (
+                SELECT DISTINCT cr2.id 
+                FROM App\Entity\ChatRoom cr2 
+                INNER JOIN cr2.participants p2 
+                WHERE p2.user = :user
+            )')
             ->setParameter('user', $user)
             ->orderBy('cr.createdAt', 'DESC')
             ->getQuery()

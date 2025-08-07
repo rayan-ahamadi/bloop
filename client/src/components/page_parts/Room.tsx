@@ -35,7 +35,8 @@ export default function Room({ roomData }: RoomProps) {
     };
 
     const handleRoomClick = () => {
-        enterRoom(roomData.room.id);
+        console.log("Room clicked:", roomData.room);
+        enterRoom(roomData.room.identifier);
     };
 
     const { name, avatarUrl } = getRoomDisplay();
@@ -63,17 +64,17 @@ export default function Room({ roomData }: RoomProps) {
 
     return (
         <div
-            className="room-item p-3 border-b border-secondary-dark cursor-pointer hover:bg-secondary-light transition-colors"
+            className="room-item p-3 border-b-2 border-secondary-dark cursor-pointer hover:bg-secondary-light transition-colors"
             onClick={handleRoomClick}
         >
             <div className="flex items-center space-x-3">
                 <div className="relative">
                     <Image
-                        src={avatarUrl}
+                        src={"https://localhost:8000" + avatarUrl}
                         alt={name}
-                        width={48}
-                        height={48}
-                        className="rounded-full border-2 border-secondary-dark"
+                        width={33}
+                        height={33}
+                        className="rounded-md border-2 border-secondary-dark"
                     />
                     {unread_count > 0 && (
                         <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">

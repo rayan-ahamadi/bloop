@@ -260,7 +260,7 @@ export class ChatHandler {
     socket.data.roomIdentifiers.set(roomId, roomIdentifier);
 
     // Notifier les autres participants
-    socket.to(`room_${roomId}`).emit("user_joined_room", { user, roomId });
+    socket.to(roomIdentifier).emit("user_joined_room", { user, roomId });
 
     console.log(`📥 ${user.name} joined room ${roomId}`);
   }
@@ -268,13 +268,31 @@ export class ChatHandler {
   /**
    * Gère l'événement leave_room
    */
-  private handleLeaveRoom(socket: Socket, data: { roomId: number }): void {
-    const { roomId } = data;
+  private handleLeaveRoom(
+    socket: Socket,
+    data: { roomIdentifier: string }
+  ): void {
+    const { roomIdentifier } = data;
     const user = socket.data.user;
 
-    // Récupérer l'identifier
-    const roomIdentifier =
-      socket.data.roomIdentifiers?.get(roomId) || `room_${roomId}`;
+    // Trouver le roomId correspondant à l'identifier
+    let roomId: number | undefined;
+    if (socket.data.roomIdentifiers) {
+      for (const [id, identifier] of socket.data.roomIdentifiers) {
+        if (identifier === roomIdentifier) {
+          roomId = id;
+          break;
+        }
+      }
+    }
+
+    if (!roomId) {
+      socket.emit("error", {
+        message: "Room non trouvée",
+        code: "ROOM_NOT_FOUND",
+      });
+      return;
+    }
 
     socket.leave(roomIdentifier);
     socket.data.rooms.delete(roomId);
@@ -288,7 +306,7 @@ export class ChatHandler {
       .to(roomIdentifier)
       .emit("user_left_room", { userId: user.id, roomId });
 
-    console.log(`📤 ${user.name} left room ${roomId}`);
+    console.log(`📤 ${user.name} left room ${roomIdentifier} (ID: ${roomId})`);
   }
 
   /**

@@ -7,11 +7,14 @@ import {
 } from "@/services/API/user.api";
 import { persist } from "zustand/middleware";
 import { th } from "zod/v4/locales";
+import { Socket } from "socket.io-client";
 
 type UserState = {
   user: User | null;
+  socket: Socket | null; // Ajout de la socket pour la gestion des événements en temps réel
   loading: boolean;
   error: string | null;
+  setSocket: (socket: Socket) => void; // Méthode pour définir la socket
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   getProfile: () => Promise<void>;
@@ -24,6 +27,7 @@ export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
       user: null,
+      socket: null, // Initialisation de la socket à null
       loading: false,
       error: null,
 
@@ -41,6 +45,11 @@ export const useUserStore = create<UserState>()(
           });
           throw error; // Propagation de l'erreur pour gestion ultérieure
         }
+      },
+
+      setSocket: (socket: Socket) => {
+        set({ socket });
+        console.log("✅ Socket définie dans le store");
       },
 
       logout: async () => {
@@ -123,6 +132,11 @@ export const useUserStore = create<UserState>()(
           localStorage.setItem(name, JSON.stringify(value)),
         removeItem: (name) => localStorage.removeItem(name),
       },
+      partialize: (state) => ({
+        user: state.user,
+        loading: state.loading,
+        // Exclure la socket de la persistance car elle contient des références circulaires
+      }),
       onRehydrateStorage: () => {
         console.log("🔁 Rehydrating Zustand store...");
         return (state) => {

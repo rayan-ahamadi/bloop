@@ -16,7 +16,10 @@ import {
   createDM,
   createGroup,
   markMessageAsRead,
+  uploadMessageImage,
 } from "@/services/API/messages.api";
+
+import { useUserStore } from "./user.stores";
 
 type messageState = {
   displayMessageLayout: boolean;
@@ -39,7 +42,7 @@ type messageState = {
     roomMembers: User[],
     roomMessageList?: RoomMessage[]
   ) => void;
-  enterRoom: (roomId: number) => Promise<void>;
+  enterRoom: (roomIdentifier: string) => Promise<void>;
   leaveRoom: () => void;
   sendMessage: (
     roomID: number,
@@ -88,27 +91,37 @@ export const useMessageStore = create<messageState>()(
           roomMessageList,
         }),
 
-      enterRoom: async (roomId: number) => {
+      enterRoom: async (roomIdentifier: string) => {
         set({ loading: true, error: null });
         try {
+          const socket = useUserStore.getState().socket;
+          if (!socket) throw new Error("Socket non initialisé");
+          // Demander au serveur de rejoindre la room
+          socket.emit("join_room", { roomIdentifier });
+
+          // Attendre la confirmation (optionnel, ici on continue sans attendre)
+          // socket.once("joined_room", ...)
+
           // Récupérer les détails de la room à partir de la liste
           const { roomList } = get();
-          const roomData = roomList.find((r) => r.room.id === roomId);
-
+          const roomData = roomList.find(
+            (r) => r.room.identifier === roomIdentifier
+          );
           if (roomData) {
             const { room } = roomData;
             let roomName = room.name || "";
             let roomAvatar = "";
-
-            // Pour les DMs, utiliser le nom de l'autre participant
             if (room.type === "DM" && room.participants.length === 2) {
-              const otherParticipant = room.participants[0]; // Simplification
+              const otherParticipant =
+                room.participants[0].user.id ===
+                useUserStore.getState().user?.id
+                  ? room.participants[1]
+                  : room.participants[0];
               roomName = otherParticipant.user.name;
               roomAvatar = otherParticipant.user.avatarUrl || "";
             }
-
             set({
-              roomID: roomId,
+              roomID: room.id,
               roomName,
               roomAvatar,
               roomType: room.type,
@@ -116,9 +129,7 @@ export const useMessageStore = create<messageState>()(
               roomIdentifier: room.identifier,
               loading: false,
             });
-
-            // Charger les messages de la room
-            await get().fetchMessages(roomId);
+            await get().fetchMessages(room.id);
           } else {
             throw new Error("Room non trouvée");
           }
@@ -131,6 +142,11 @@ export const useMessageStore = create<messageState>()(
       },
 
       leaveRoom: () => {
+        const socket = useUserStore.getState().socket;
+        const roomIdentifier = get().roomIdentifier;
+        // if (socket && roomIdentifier) {
+        //   socket.emit("leave_room", { roomIdentifier }); // ne pas quitter la room pour recevoir les notifications
+        // }
         set({
           roomID: null,
           roomName: null,
@@ -142,16 +158,33 @@ export const useMessageStore = create<messageState>()(
         });
       },
 
-      sendMessage: async (roomID: number, content: string, image?: string) => {
+      sendMessage: async (roomID: number, content: string, image?: any) => {
         set({ loading: true, error: null });
         try {
-          const messageData: CreateMessageRequest = { content };
-          if (image) messageData.image = image;
-
-          await sendMessage(roomID, messageData);
-
-          // Recharger les messages après envoi
-          await get().fetchMessages(roomID);
+          const socket = useUserStore.getState().socket;
+          if (!socket) throw new Error("Socket non initialisé");
+          let imageUrl;
+          if (image) {
+            imageUrl = await uploadMessageImage(image);
+          }
+          socket.emit("send_message", {
+            roomId: roomID,
+            content,
+            image: imageUrl,
+          });
+          await new Promise<void>((resolve, reject) => {
+            socket.once("message_sent", async (data) => {
+              if (data.success) {
+                await get().fetchMessages(roomID);
+                resolve();
+              } else {
+                reject(data.error || "Erreur lors de l'envoi du message");
+              }
+            });
+            socket.once("error", (err) =>
+              reject(err.message || "Erreur socket")
+            );
+          });
           set({ loading: false });
         } catch (error) {
           set({
@@ -190,14 +223,23 @@ export const useMessageStore = create<messageState>()(
       createDirectMessage: async (userId: number) => {
         set({ loading: true, error: null });
         try {
-          const response = await createDM(userId);
-
-          // Recharger la liste des rooms
-          await get().fetchRooms();
-
-          // Entrer dans la nouvelle room
-          await get().enterRoom(response.room.id);
-
+          const socket = useUserStore.getState().socket;
+          if (!socket) throw new Error("Socket non initialisé");
+          socket.emit("create_dm", { targetUserId: userId });
+          await new Promise<void>((resolve, reject) => {
+            socket.once("dm_created", async (data) => {
+              if (data.success) {
+                await get().fetchRooms();
+                await get().enterRoom(data.roomId);
+                resolve();
+              } else {
+                reject(data.message || "Erreur lors de la création du DM");
+              }
+            });
+            socket.once("error", (err) =>
+              reject(err.message || "Erreur socket")
+            );
+          });
           set({ loading: false });
         } catch (error) {
           set({
@@ -210,14 +252,23 @@ export const useMessageStore = create<messageState>()(
       createGroupChat: async (name: string, participantIds: number[]) => {
         set({ loading: true, error: null });
         try {
-          const response = await createGroup(name, participantIds);
-
-          // Recharger la liste des rooms
-          await get().fetchRooms();
-
-          // Entrer dans la nouvelle room
-          await get().enterRoom(response.room.id);
-
+          const socket = useUserStore.getState().socket;
+          if (!socket) throw new Error("Socket non initialisé");
+          socket.emit("create_group", { name, participantIds });
+          await new Promise<void>((resolve, reject) => {
+            socket.once("group_created", async (data) => {
+              if (data.success) {
+                await get().fetchRooms();
+                await get().enterRoom(data.roomId);
+                resolve();
+              } else {
+                reject(data.message || "Erreur lors de la création du groupe");
+              }
+            });
+            socket.once("error", (err) =>
+              reject(err.message || "Erreur socket")
+            );
+          });
           set({ loading: false });
         } catch (error) {
           set({

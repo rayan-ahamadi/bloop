@@ -8,10 +8,10 @@ import { useUserStore } from "@/stores/user.stores";
 import { usePostStore } from "@/stores/post.stores";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import React from "react";
 import DashHomeLoading from "@/components/page_parts/DashHomeLoading";
+import { initSocket } from '@/lib/socket';
 
 
 type Pagination = {
@@ -82,6 +82,7 @@ export default function DashboardHome() {
         setHasHydrated(true);
     }, []);
 
+
     if (!hasHydrated) return <DashHomeLoading />;
 
     // TODO : Remplacer par une modal qui propose à l'utilisateur de se connecter ou de s'inscrire
@@ -89,6 +90,7 @@ export default function DashboardHome() {
     // if (!user) {
     //     router.push("/");
     // }
+
 
 
     if (!user) {

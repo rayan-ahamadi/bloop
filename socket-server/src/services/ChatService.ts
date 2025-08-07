@@ -18,7 +18,7 @@ export class ChatService {
    */
   async validateUser(token: string): Promise<User | null> {
     try {
-      const response = await this.api.get("/user/profile", {
+      const response = await this.api.get(`/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
@@ -169,23 +169,6 @@ export class ChatService {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      return response.data;
-    } catch (error) {
-      console.error("❌ Erreur création groupe:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Met à jour le cache des identifiers
-   */
-  updateRoomCache(roomId: number, identifier: string): void {
-    this.roomsCache.set(roomId, identifier);
-  }
-}
         }
       );
 

@@ -12,7 +12,7 @@ import PostDetailLoading from "@/components/page_parts/PostDetailLoading";
 export default function BloopDetail() {
     const [hasHydrated, setHasHydrated] = useState(false);
     const router = useRouter();
-    const { user, getProfile } = useUserStore();
+    const { user, getProfile, } = useUserStore();
     const { fetchPost, loading } = usePostStore();
     const [postData, setPostData] = useState<any>(null);
     const { id } = useParams();

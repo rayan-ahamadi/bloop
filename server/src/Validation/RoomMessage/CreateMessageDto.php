@@ -1,11 +1,11 @@
 <?php 
 
-// src/DTO/CreateMessageDTO.php
-namespace App\DTO;
+// src/Validation/RoomMessage/CreateMessageDto.php
+namespace App\Validation\RoomMessage;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class CreateMessageDTO
+class CreateMessageDto
 {
     #[Assert\NotBlank]
     public int $roomId;

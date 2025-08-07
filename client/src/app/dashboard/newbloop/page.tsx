@@ -3,6 +3,7 @@
 import BloopPostMobile from "@/components/page_parts/PostBloopMobile";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/user.stores";
 
 export default function NewBloop() {
 
