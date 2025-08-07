@@ -47,7 +47,7 @@ type messageState = {
   sendMessage: (
     roomID: number,
     content: string,
-    image?: string
+    image?: File | string
   ) => Promise<void>;
   fetchMessages: (roomID: number, page?: number) => Promise<void>;
   fetchRooms: () => Promise<void>;
@@ -158,7 +158,11 @@ export const useMessageStore = create<messageState>()(
         });
       },
 
-      sendMessage: async (roomID: number, content: string, image?: any) => {
+      sendMessage: async (
+        roomID: number,
+        content: string,
+        image?: File | string
+      ) => {
         set({ loading: true, error: null });
         try {
           const socket = useUserStore.getState().socket;
@@ -170,7 +174,7 @@ export const useMessageStore = create<messageState>()(
           socket.emit("send_message", {
             roomId: roomID,
             content,
-            image: imageUrl,
+            image: imageUrl.url,
           });
           await new Promise<void>((resolve, reject) => {
             socket.once("message_sent", async (data) => {

@@ -98,7 +98,7 @@ final class MessageController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $limit = max(1, min(100, $request->query->getInt('limit', 50)));
 
-        $result = $this->roomMessageRepository->findByRoomPaginated($room, $page, $limit);
+        $result = $this->roomMessageRepository->findByRoomPaginated($room, $user ,$page, $limit);
 
         return $this->json(
             [

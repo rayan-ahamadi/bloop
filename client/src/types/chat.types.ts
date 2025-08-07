@@ -20,6 +20,7 @@ export interface RoomMessage {
   image?: string;
   sentAt: string;
   user: User;
+  read: boolean;
 }
 
 export interface RoomWithLastMessage {

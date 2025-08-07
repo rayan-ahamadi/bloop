@@ -180,4 +180,17 @@ class ChatRoom
         }
         return $this;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'identifier' => $this->getIdentifier(),
+            'type' => $this->getType()->value,
+            'name' => $this->getName(),
+            'createdAt' => $this->getCreatedAt()->format('Y-m-d H:i:s'),
+            'participants' => array_map(fn(RoomParticipant $p) => $p->toArray(), $this->getParticipants()->toArray()),
+            'messages' => array_map(fn(RoomMessage $m) => $m->toArray(), $this->getMessages()->toArray()),
+        ];
+    }
 }

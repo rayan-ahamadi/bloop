@@ -44,6 +44,9 @@ class RoomMessage
     #[Groups(['message:read'])]
     private \DateTimeImmutable $sentAt;
 
+    #[Groups(['message:read'])]
+    private ?bool $read = null;
+
     public function __construct()
     {
         $this->sentAt = new \DateTimeImmutable();
@@ -141,4 +144,16 @@ class RoomMessage
     {
         return $this->readBy->contains($user);
     }
+
+    public function setRead(?bool $read): self
+    {
+        $this->read = $read;
+        return $this;
+    }
+
+    public function isRead(): ?bool
+    {
+        return $this->read;
+    }
+    
 }

@@ -197,7 +197,7 @@ export default function UserDetails() {
                     <div className="likes-list w-full">
                         {userData?.likes.length > 0 ? (
                             userData?.likes.map((post) => (
-                                <Link key={post?.post.id} href={`/posts/${post?.post.id}`} className="block border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
+                                <Link key={post?.post.id} href={`/dashboard/bloop/${post?.post.id}`} className="block border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
                                     <Bloop bloopContent={post} onDelete={handleDelete} onLike={handleLike} onRepost={handleRepost} onSave={handleSave} />
                                 </Link>
                             ))
@@ -210,7 +210,7 @@ export default function UserDetails() {
                     {postsAndReposts.length > 0 && switchState === "posts" ? (
                         <div className="w-full">
                             {postsAndReposts.map((post) => (
-                                <Link key={post?.post.id} href={`/posts/${post?.post.id}`} className=" block border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
+                                <Link key={post?.post.id} href={`/dashboard/bloop/${post?.post.id}`} className=" block border-y-1 first:border-t-0 last:border-b-0 border-secondary-dark">
                                     <Bloop bloopContent={post} onDelete={handleDelete} onLike={handleLike} onRepost={handleRepost} onSave={handleSave} isRepost={post?.repostedAt ? true : false} />
                                 </Link>
                             ))}

@@ -51,21 +51,27 @@ class RoomMessageRepository extends ServiceEntityRepository
     /**
      * Trouve les messages d'une room avec pagination
      */
-    public function findByRoomPaginated(ChatRoom $room, int $page = 1, int $limit = 50): array
+    public function findByRoomPaginated(ChatRoom $room, User $currentUser, int $page = 1, int $limit = 50): array
     {
         $offset = ($page - 1) * $limit;
 
         $qb = $this->createQueryBuilder('rm')
             ->leftJoin('rm.user', 'u')
             ->leftJoin('rm.readBy', 'rb')
-            ->addSelect('u', 'rb')
+            ->leftJoin('rm.readBy', 'currentUserRead', 'WITH', 'currentUserRead = :currentUser')
+            ->addSelect('u', 'rb', 'currentUserRead')
             ->where('rm.room = :room')
             ->setParameter('room', $room)
+            ->setParameter('currentUser', $currentUser)
             ->orderBy('rm.sentAt', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
         $messages = $qb->getQuery()->getResult();
+
+        foreach ($messages as $message) {
+            $message->setRead($message->isReadBy($currentUser));
+        }
 
         // Compter le total
         $countQb = $this->createQueryBuilder('rm')
