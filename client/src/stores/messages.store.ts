@@ -174,7 +174,7 @@ export const useMessageStore = create<messageState>()(
           socket.emit("send_message", {
             roomId: roomID,
             content,
-            image: imageUrl.url,
+            image: imageUrl?.url || undefined, // imageUrl.url peut être undefined si pas d'image
           });
           await new Promise<void>((resolve, reject) => {
             socket.once("message_sent", async (data) => {

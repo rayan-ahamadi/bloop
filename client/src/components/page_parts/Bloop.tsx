@@ -80,6 +80,7 @@ export default function Bloop(
         hasReposted: bloopContent?.hasReposted || false,
         type: bloopContent?.post?.type || "text",
         parentPostUser: bloopContent?.post?.parentPost?.user.username || "Unknown",
+        rebloopedBy: bloopContent?.post?.reposts[0]?.user_id?.username || "Unknown",
     });
 
     const {
@@ -96,7 +97,8 @@ export default function Bloop(
         hasLiked,
         hasReposted,
         type,
-        parentPostUser
+        parentPostUser,
+        rebloopedBy,
     } = bloopState;
 
     // Calcule le le temps écoulé depuis la publication du bloop. 
@@ -133,13 +135,13 @@ export default function Bloop(
             {isRepost && (
                 <div className="flex items-center gap-2 mb-2">
                     <span className="text-secondary-dark/60 text-sm">
-                        Reposté par <b>@{username}</b>
+                        Reposté par <b>@{rebloopedBy}</b>
                     </span>
                 </div>
             )}
             <div className="bloopscontent flex flex-row gap-4 items-start">
                 <Image
-                    src={profilePicture}
+                    src={profilePicture + `?${new Date().getTime()}`} // Ajout d'un timestamp pour éviter le cache
                     alt={name + " Avatar"}
                     width={45}
                     height={45}
@@ -169,7 +171,7 @@ export default function Bloop(
                         </p>
                         {image && (
                             <Image
-                                src={image}
+                                src={image + `?${new Date().getTime()}`}
                                 alt="Bloop Image"
                                 width={500}
                                 height={300}

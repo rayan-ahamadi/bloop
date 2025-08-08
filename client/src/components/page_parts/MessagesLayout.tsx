@@ -207,7 +207,7 @@ export default function MessageLayout() {
                             <ArrowLeft className="w-6 h-6 cursor-pointer" onClick={() => leaveRoom()} />
                             {roomAvatar && (
                                 <Image
-                                    src={"https://localhost:8000" + roomAvatar}
+                                    src={"https://localhost:8000" + roomAvatar + `?${new Date().getTime()}`}
                                     alt="Room Avatar"
                                     width={32}
                                     height={32}
@@ -268,7 +268,7 @@ export default function MessageLayout() {
                                         {message?.image && (
                                             <div className="message-image border-t-3 border-secondary-dark">
                                                 <Image
-                                                    src={"https://localhost:8000" + message?.image}
+                                                    src={"https://localhost:8000" + message?.image + `?${new Date().getTime()}`}
                                                     alt="Message image"
                                                     width={200}
                                                     height={150}
@@ -321,7 +321,7 @@ export default function MessageLayout() {
                                     {previewImage && (
                                         <div className="relative">
                                             <Image
-                                                src={previewImage}
+                                                src={previewImage + `?${new Date().getTime()}`}
                                                 alt="Preview"
                                                 width={200}
                                                 height={150}

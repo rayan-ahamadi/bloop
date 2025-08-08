@@ -28,7 +28,7 @@ export default function Header() {
         <header className="bg-secondary-dark flex justify-between items-center p-4 z-50 fixed w-full">
             <div id="burger-menu">
                 <Image
-                    src="/images/icons/burger-menu.svg"
+                    src={"/images/icons/burger-menu.svg" + `?${new Date().getTime()}`}
                     alt="Menu"
                     width={24}
                     height={24}
@@ -36,7 +36,7 @@ export default function Header() {
                     onClick={displayMobileMenu}
                 />
                 <Image
-                    src="/images/logo/bloop-4.png"
+                    src={"/images/logo/bloop-4.png" + `?${new Date().getTime()}`}
                     alt="Menu"
                     width={90}
                     height={50}
@@ -45,7 +45,7 @@ export default function Header() {
             </div>
             <div className="logo mr-[45%]">
                 <Image
-                    src="/images/logo/yeuxbloop.png"
+                    src={"/images/logo/yeuxbloop.png" + `?${new Date().getTime()}`}
                     alt="Bloop Logo"
                     width={32}
                     height={32}

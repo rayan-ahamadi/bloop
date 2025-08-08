@@ -70,7 +70,7 @@ export default function Room({ roomData }: RoomProps) {
             <div className="flex items-center space-x-3">
                 <div className="relative">
                     <Image
-                        src={"https://localhost:8000" + avatarUrl}
+                        src={"https://localhost:8000" + avatarUrl + `?${new Date().getTime()}`}
                         alt={name}
                         width={33}
                         height={33}

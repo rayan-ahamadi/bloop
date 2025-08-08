@@ -62,7 +62,7 @@ const FindFriends = forwardRef<HTMLDivElement, { className?: string }>(({ classN
                         {suggestionsList.map((user, index) => (
                             <div key={index} className="suggestion-item flex justify-around items-center gap-3 p-2 bg-primary hover:bg-primary/80 rounded-md shadow-[4px_4px_0_0_black] border-2 border-secondary-dark">
                                 <Image
-                                    src={user.avatar}
+                                    src={user.avatar + `?${new Date().getTime()}`}
                                     alt={`${user.username} Avatar`}
                                     width={40}
                                     height={40}
